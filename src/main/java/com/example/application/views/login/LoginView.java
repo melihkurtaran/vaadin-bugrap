@@ -21,7 +21,6 @@ public class LoginView extends LoginOverlay {
         setOpened(true);
 
 
-
     }
 
 }
