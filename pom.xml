@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- Vaadin project from https://start.vaadin.com/project/dd4861b2-c67c-4849-b64a-6e11ce9d8b00 -->
+    <!-- Vaadin project from https://start.vaadin.com/project/e3aeddcc-6983-434b-af0b-db3cadf2a284 -->
     <groupId>com.example.application</groupId>
     <artifactId>vaadinbugrap</artifactId>
     <name>Project base for Spring Boot and Vaadin Flow</name>
@@ -22,6 +22,12 @@
 
     <repositories>
         <!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
+
+            <repository>
+                <id>bugrap</id>
+                <url>https://repo.vaadin.com/nexus/content/repositories/vaadin-bugrap</url>
+            </repository>
+
 
         <!-- Main Maven repository -->
         <repository>
@@ -77,6 +83,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.vaadin</groupId>
+            <artifactId>bugrap-domain-spring</artifactId>
+            <version>1.1</version>
+        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <!-- Replace artifactId with vaadin-core to use only free components -->
