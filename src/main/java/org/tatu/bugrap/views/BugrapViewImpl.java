@@ -16,6 +16,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
+import org.vaadin.bugrap.domain.spring.ProjectVersionRepository;
 
 @Route("")
 public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterNavigationObserver {
@@ -28,6 +29,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private int count;
 	private ComboBox<Project> projectSelection;
 	private ComboBox<ProjectVersion> versionSelection;
+	private Project selectedProject;
 
 	public BugrapViewImpl(BugrapPresenter presenter) {
 		this.presenter = presenter;
@@ -46,13 +48,18 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
 		}) ;
 
-		projectSelection = new ComboBox<>();
-		projectSelection.setWidth("50%");
-		add(projectSelection);
-
 		//version Selection for the grid
 		versionSelection = new ComboBox<>("Reports for");
 
+		projectSelection = new ComboBox<>();
+		projectSelection.setWidth("50%");
+		projectSelection.setPlaceholder("Select a project");
+		projectSelection.addValueChangeListener(event -> {
+			selectedProject = event.getValue();
+			versionSelection.setItems(presenter.requestProjectVersionsByProject(selectedProject));
+			grid.setItems(presenter.requestReportsByProject(selectedProject));
+		});
+		add(projectSelection);
 
 		filter = new TextField("Filter");
 		filter.setValueChangeMode(ValueChangeMode.TIMEOUT);

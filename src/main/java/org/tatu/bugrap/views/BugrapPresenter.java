@@ -1,5 +1,6 @@
 package org.tatu.bugrap.views;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.data.domain.Example;
@@ -8,8 +9,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.vaadin.bugrap.domain.entities.Project;
+import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.spring.ProjectRepository;
+import org.vaadin.bugrap.domain.spring.ProjectVersionRepository;
 import org.vaadin.bugrap.domain.spring.ReportRepository;
 
 import com.vaadin.flow.data.provider.Query;
@@ -21,12 +24,15 @@ public class BugrapPresenter {
 
 	private ReportRepository reportRepository;
 	private ProjectRepository projectRepository;
+	private ProjectVersionRepository projectVersionRepository;
 	private BugrapView view;
 
-	public BugrapPresenter(ReportRepository reportRepository, ProjectRepository projectRepository) {
+	public BugrapPresenter(ReportRepository reportRepository, ProjectRepository projectRepository,
+						   ProjectVersionRepository projectVersionRepository) {
 
 		this.reportRepository = reportRepository;
 		this.projectRepository = projectRepository;
+		this.projectVersionRepository = projectVersionRepository;
 	}
 
 	public Stream<Report> requestReports(String filter, Query<Report, ?> query) {
@@ -46,6 +52,14 @@ public class BugrapPresenter {
 
 	public Stream<Project> requestProjects() {
 		return projectRepository.findAll().stream();
+	}
+
+	public List<Report> requestReportsByProject(Project p) {
+		return reportRepository.findAllByProject(p);
+	}
+
+	public List<ProjectVersion> requestProjectVersionsByProject(Project p) {
+		return projectVersionRepository.findAllByProject(p);
 	}
 
 	
