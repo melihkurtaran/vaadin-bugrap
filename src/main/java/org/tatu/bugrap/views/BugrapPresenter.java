@@ -7,7 +7,9 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
+import org.vaadin.bugrap.domain.entities.Project;
 import org.vaadin.bugrap.domain.entities.Report;
+import org.vaadin.bugrap.domain.spring.ProjectRepository;
 import org.vaadin.bugrap.domain.spring.ReportRepository;
 
 import com.vaadin.flow.data.provider.Query;
@@ -18,10 +20,13 @@ import com.vaadin.flow.spring.annotation.RouteScope;
 public class BugrapPresenter {
 
 	private ReportRepository reportRepository;
+	private ProjectRepository projectRepository;
 	private BugrapView view;
 
-	public BugrapPresenter(ReportRepository reportRepository) {
+	public BugrapPresenter(ReportRepository reportRepository, ProjectRepository projectRepository) {
+
 		this.reportRepository = reportRepository;
+		this.projectRepository = projectRepository;
 	}
 
 	public Stream<Report> requestReports(String filter, Query<Report, ?> query) {
@@ -38,6 +43,11 @@ public class BugrapPresenter {
 		view.setCount(count);
 		return count; 
 	}
+
+	public Stream<Project> requestProjects() {
+		return projectRepository.findAll().stream();
+	}
+
 	
 	public void setView(BugrapView view) {
 		this.view = view;

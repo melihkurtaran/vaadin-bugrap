@@ -1,6 +1,10 @@
 package org.tatu.bugrap.views;
 
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import org.vaadin.bugrap.domain.entities.Project;
+import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 
 import com.vaadin.flow.component.grid.Grid;
@@ -22,6 +26,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private GridLazyDataView<Report> dataView;
 	private Span countLabel;
 	private int count;
+	private ComboBox<Project> projectSelection;
+	private ComboBox<ProjectVersion> versionSelection;
 
 	public BugrapViewImpl(BugrapPresenter presenter) {
 		this.presenter = presenter;
@@ -30,7 +36,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		setSizeFull();
 		grid = new Grid<>(Report.class);
 		grid.getDataCommunicator().setPagingEnabled(true);
-		grid.setColumns("priority","type","summary","assigned");
+		grid.setColumns("priority","type","summary","assigned","version");
 		grid.setHeight("500px");
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
 		grid.addSelectionListener(selectionEvent -> {
@@ -39,6 +45,14 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			else if(selectionEvent.getAllSelectedItems().size()>1)
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
 		}) ;
+
+		projectSelection = new ComboBox<>();
+		projectSelection.setWidth("50%");
+		add(projectSelection);
+
+		//version Selection for the grid
+		versionSelection = new ComboBox<>("Reports for");
+
 
 		filter = new TextField("Filter");
 		filter.setValueChangeMode(ValueChangeMode.TIMEOUT);
@@ -50,8 +64,9 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		});
 
 		countLabel = new Span();
-		
-		add(filter, grid, countLabel);
+
+		add(new HorizontalLayout(versionSelection,filter));
+		add(grid, countLabel);
 		this.setFlexGrow(1, grid);
 	}
 
@@ -60,6 +75,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		count = presenter.requestReportCount();
 		dataView = grid.setItems(query -> presenter.requestReports("", query));
 		dataView.setItemCountEstimate(count);
+
+		projectSelection.setItems(presenter.requestProjects());
 	}
 
 	@Override
