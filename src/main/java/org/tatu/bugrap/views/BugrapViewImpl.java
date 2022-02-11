@@ -2,8 +2,10 @@ package org.tatu.bugrap.views;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.data.provider.SortDirection;
 import org.vaadin.bugrap.domain.entities.Project;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
@@ -17,7 +19,10 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
-import org.vaadin.bugrap.domain.spring.ProjectVersionRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Route("")
 public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterNavigationObserver {
@@ -45,6 +50,13 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		grid.setColumns("priority","type","summary","assigned","version");
 		grid.setHeight("500px");
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+
+		//Starts as ordered by priority column
+		List<GridSortOrder<Report>> order = new ArrayList<GridSortOrder<Report>>();
+		order.add(new GridSortOrder<Report>(grid.getColumns().get(0), SortDirection.DESCENDING));
+		grid.setColumnReorderingAllowed(true);
+		grid.sort(order);
+
 		grid.addSelectionListener(selectionEvent -> {
 			if(selectionEvent.getAllSelectedItems().size()==1)
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " item selected");
@@ -78,6 +90,16 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			dataView = grid.setItems(query -> presenter.requestReports(event.getValue(), query));
 			dataView.setItemCountEstimate(count);
 			setCount(count);
+		});
+
+		// filter reports by version (Why does not work?)
+		versionSelection.addValueChangeListener(version -> {
+			List<Report> reportList = new ArrayList<Report>();
+			dataView.getItems().forEach(report -> {
+				if (report.getVersion().equals(version))
+					reportList.add(report);
+			});
+			grid.setItems(reportList);
 		});
 
 		countLabel = new Span();
