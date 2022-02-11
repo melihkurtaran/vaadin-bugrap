@@ -20,6 +20,7 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +49,12 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		grid = new Grid<>(Report.class);
 		grid.getDataCommunicator().setPagingEnabled(true);
 		grid.setColumns("priority","type","summary","assigned","version");
+		grid.getColumnByKey( "assigned").setHeader("Assigned to");
 		grid.setHeight("500px");
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+
+		// right now only seconds difference -> will be updated to support mins/hours/days ago
+		grid.addColumn(report -> Math.abs(report.getTimestamp().getTime() - report.getReportedTimestamp().getTime())).setHeader(("Reported"));
 
 		//Starts as ordered by priority column
 		List<GridSortOrder<Report>> order = new ArrayList<GridSortOrder<Report>>();
@@ -72,7 +77,13 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		projectSelection.setPlaceholder("Select a project");
 		projectSelection.addValueChangeListener(event -> {
 			selectedProject = event.getValue();
-			versionSelection.setItems(presenter.requestProjectVersionsByProject(selectedProject));
+			List<ProjectVersion> versions = new ArrayList<ProjectVersion>();
+			ProjectVersion v = new ProjectVersion();
+			v.setVersion("All versions");
+			versions.add(v);
+			versions.addAll(presenter.requestProjectVersionsByProject(selectedProject));
+			versionSelection.setItems(versions);
+			versionSelection.setValue(v); //to start as all versions selected
 			grid.setItems(presenter.requestReportsByProject(selectedProject));
 		});
 		add(projectSelection);
@@ -92,14 +103,15 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			setCount(count);
 		});
 
-		// filter reports by version (Why does not work?)
+		// filter reports by version
 		versionSelection.addValueChangeListener(version -> {
-			List<Report> reportList = new ArrayList<Report>();
-			dataView.getItems().forEach(report -> {
-				if (report.getVersion().equals(version))
-					reportList.add(report);
-			});
-			grid.setItems(reportList);
+			dataView = grid.setItems(query -> presenter.requestReportsByVersion(version.getValue(), query));
+//			List<Report> reportList = new ArrayList<Report>();
+//			dataView.getItems().forEach(report -> {
+//				if (report.getVersion().equals(version))
+//					reportList.add(report);
+//			});
+//			grid.setItems(reportList);
 		});
 
 		countLabel = new Span();
@@ -122,5 +134,10 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	public void setCount(int count) {
 		long items = dataView != null ? dataView.getItems().count() : count;
 		countLabel.setText(String.format("Count: %s / %s", items, count));
+	}
+
+	public void EditorForSingleReport()
+	{
+		//this will create a split panel to edit a report
 	}
 }

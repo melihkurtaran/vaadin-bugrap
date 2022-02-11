@@ -45,6 +45,16 @@ public class BugrapPresenter {
 		return reportRepository.findAll(example, PageRequest.of(query.getPage(), query.getPageSize())).stream();
 	}
 
+	//requesting reports without using projects
+	public Stream<Report> requestReportsByVersion(ProjectVersion filter, Query<Report, ?> query) {
+		Report report = new Report();
+		report.setVersion(filter);
+		Example<Report> example = Example.of(report,
+				ExampleMatcher.matching().withMatcher("version", GenericPropertyMatchers.exact()));
+
+		return reportRepository.findAll(example, PageRequest.of(query.getPage(), query.getPageSize())).stream();
+	}
+
 	public int requestReportCount() {
 		int count = (int) reportRepository.count();
 		view.setCount(count);
