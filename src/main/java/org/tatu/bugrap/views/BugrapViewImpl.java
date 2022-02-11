@@ -1,5 +1,6 @@
 package org.tatu.bugrap.views;
 
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -30,6 +31,9 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private ComboBox<Project> projectSelection;
 	private ComboBox<ProjectVersion> versionSelection;
 	private Project selectedProject;
+	private Button buttonReportBug;
+	private Button buttonReqFeature;
+	private Button buttonMngProject;
 
 	public BugrapViewImpl(BugrapPresenter presenter) {
 		this.presenter = presenter;
@@ -61,7 +65,13 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		});
 		add(projectSelection);
 
-		filter = new TextField("Filter");
+		//buttons
+		buttonReportBug = new Button("Report a bug");
+		buttonReqFeature = new Button("Request a feature");
+		buttonMngProject = new Button("Manage Project");
+
+		filter = new TextField("");
+		filter.setPlaceholder("Search..");
 		filter.setValueChangeMode(ValueChangeMode.TIMEOUT);
 		filter.setValueChangeTimeout(2000);
 		filter.addValueChangeListener(event -> {
@@ -71,8 +81,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		});
 
 		countLabel = new Span();
-
-		add(new HorizontalLayout(versionSelection,filter));
+		add(new HorizontalLayout(buttonReportBug,buttonReqFeature,buttonMngProject,filter));
+		add(versionSelection);
 		add(grid, countLabel);
 		this.setFlexGrow(1, grid);
 	}

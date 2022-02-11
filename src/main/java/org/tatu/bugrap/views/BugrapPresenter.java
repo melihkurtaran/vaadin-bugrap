@@ -35,6 +35,7 @@ public class BugrapPresenter {
 		this.projectVersionRepository = projectVersionRepository;
 	}
 
+	//requesting reports without using projects
 	public Stream<Report> requestReports(String filter, Query<Report, ?> query) {
 		Report report = new Report();
 		report.setSummary(filter);
