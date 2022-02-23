@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.GridSortOrder;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
@@ -21,12 +22,10 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
-import org.vaadin.bugrap.domain.entities.Reporter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @PageTitle("Bugrap Home")
 @Route(value = "")
@@ -75,6 +74,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " item selected");
 				form.setVisible(true);
 				form.setSummary(selectionEvent.getFirstSelectedItem().get().getSummary());
+				form.setDescription(selectionEvent.getFirstSelectedItem().get().getDescription());
 
 				form.setReport(selectionEvent.getFirstSelectedItem().get());
 			}
@@ -85,7 +85,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		}) ;
 
 		//version Selection for the grid
-		versionSelection = new ComboBox<>("Reports for");
+		versionSelection = new ComboBox<>("");
+
 
 		projectSelection = new ComboBox<>();
 		projectSelection.setWidth("50%");
@@ -131,7 +132,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		countLabel = new Span();
 		HorizontalLayout horizontalLayout = new HorizontalLayout(buttonReportBug,buttonReqFeature,buttonMngProject,filter);
 		add(horizontalLayout);
-		add(versionSelection);
+		add(new HorizontalLayout(new Paragraph("Reports for"),versionSelection));
 		EditorForSingleReport();
 		closeEditor();
 		add(getContent());

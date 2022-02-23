@@ -10,6 +10,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -20,11 +21,13 @@ import org.vaadin.bugrap.domain.entities.Reporter;
 
 import java.util.List;
 
-public class ReportForm extends HorizontalLayout {
+public class ReportForm extends VerticalLayout {
 
     Binder<Report> binder = new BeanValidationBinder<>(Report.class);
 
     H3 summary = new H3("");
+    TextArea description = new TextArea("");
+    Button openBtn = new Button("Open");
     ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
     ComboBox<Report.Type> type = new ComboBox<>("Type");
     ComboBox<Report.Status> status = new ComboBox<>("Status");
@@ -48,7 +51,8 @@ public class ReportForm extends HorizontalLayout {
         version.setItems(versions);
         version.setItemLabelGenerator(ProjectVersion::getVersion);
 
-        HorizontalLayout layout = new HorizontalLayout( priority,
+        HorizontalLayout layout = new HorizontalLayout(summary,openBtn);
+        HorizontalLayout layout2 = new HorizontalLayout( priority,
                 type,
                 status,
                 assigned,
@@ -57,7 +61,13 @@ public class ReportForm extends HorizontalLayout {
         );
 
         layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-        add( new VerticalLayout(summary, layout));
+        layout2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
+        description.setWidth("300%");
+        openBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+        openBtn.getElement().getStyle().set("margin-left", "auto");
+
+        add( layout, layout2, description);
 
     }
 
@@ -67,11 +77,15 @@ public class ReportForm extends HorizontalLayout {
         summary.add(s);
     }
 
+    public void setDescription(String s)
+    {
+        description.setValue(s);
+    }
+
     private Component createButtonLayout(){
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        revert.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        revert.addThemeVariants(ButtonVariant.MATERIAL_CONTAINED);
 
-        save.addClickShortcut(Key.ENTER);
         revert.addClickShortcut(Key.ESCAPE);
 
         save.addClickListener(buttonClickEvent -> validateAndSave());
