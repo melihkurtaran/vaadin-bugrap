@@ -6,9 +6,10 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.charts.events.ChartLoadEvent;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -16,7 +17,6 @@ import com.vaadin.flow.shared.Registration;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
-import org.vaadin.bugrap.domain.spring.ReportRepository;
 
 import java.util.List;
 
@@ -24,6 +24,7 @@ public class ReportForm extends HorizontalLayout {
 
     Binder<Report> binder = new BeanValidationBinder<>(Report.class);
 
+    H3 summary = new H3("");
     ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
     ComboBox<Report.Type> type = new ComboBox<>("Type");
     ComboBox<Report.Status> status = new ComboBox<>("Status");
@@ -46,10 +47,8 @@ public class ReportForm extends HorizontalLayout {
         assigned.setItemLabelGenerator(Reporter::getName);
         version.setItems(versions);
         version.setItemLabelGenerator(ProjectVersion::getVersion);
-        this.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
 
-        add(
-                priority,
+        HorizontalLayout layout = new HorizontalLayout( priority,
                 type,
                 status,
                 assigned,
@@ -57,7 +56,17 @@ public class ReportForm extends HorizontalLayout {
                 createButtonLayout()
         );
 
+        layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
+        add( new VerticalLayout(summary, layout));
+
     }
+
+    public void setSummary(String s)
+    {
+        summary.removeAll();
+        summary.add(s);
+    }
+
     private Component createButtonLayout(){
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         revert.addThemeVariants(ButtonVariant.LUMO_TERTIARY);

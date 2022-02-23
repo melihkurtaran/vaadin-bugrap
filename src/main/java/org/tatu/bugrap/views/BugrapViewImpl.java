@@ -74,6 +74,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			if(selectionEvent.getAllSelectedItems().size()==1) {
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " item selected");
 				form.setVisible(true);
+				form.setSummary(selectionEvent.getFirstSelectedItem().get().getSummary());
+
 				form.setReport(selectionEvent.getFirstSelectedItem().get());
 			}
 			else if(selectionEvent.getAllSelectedItems().size()!=1) {
