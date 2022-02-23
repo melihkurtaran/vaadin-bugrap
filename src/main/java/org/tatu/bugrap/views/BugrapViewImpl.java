@@ -1,11 +1,16 @@
 package org.tatu.bugrap.views;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.splitlayout.SplitLayout;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.router.PageTitle;
 import org.vaadin.bugrap.domain.entities.Project;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
@@ -20,12 +25,12 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-
-@Route("")
+@PageTitle("Bugrap Home")
+@Route(value = "")
 public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterNavigationObserver {
 
 	private Grid<Report> grid;
@@ -40,6 +45,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private Button buttonReportBug;
 	private Button buttonReqFeature;
 	private Button buttonMngProject;
+	private ReportForm form;
+
 
 	public BugrapViewImpl(BugrapPresenter presenter) {
 		this.presenter = presenter;
@@ -63,10 +70,14 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		grid.sort(order);
 
 		grid.addSelectionListener(selectionEvent -> {
-			if(selectionEvent.getAllSelectedItems().size()==1)
+			if(selectionEvent.getAllSelectedItems().size()==1) {
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " item selected");
-			else if(selectionEvent.getAllSelectedItems().size()>1)
+				form.setVisible(true);
+			}
+			else if(selectionEvent.getAllSelectedItems().size()!=1) {
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
+				closeEditor();
+			}
 		}) ;
 
 		//version Selection for the grid
@@ -115,10 +126,27 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		});
 
 		countLabel = new Span();
-		add(new HorizontalLayout(buttonReportBug,buttonReqFeature,buttonMngProject,filter));
+		HorizontalLayout horizontalLayout = new HorizontalLayout(buttonReportBug,buttonReqFeature,buttonMngProject,filter);
+		add(horizontalLayout);
 		add(versionSelection);
-		add(grid, countLabel);
+		EditorForSingleReport();
+		closeEditor();
+		add(getContent());
 		this.setFlexGrow(1, grid);
+	}
+
+	private void closeEditor() {
+		form.setReport(null);
+		form.setVisible(false);
+	}
+
+	private Component getContent() {
+		VerticalLayout content = new VerticalLayout(grid,form,countLabel);
+		content.setFlexGrow(4,grid);
+		content.setFlexGrow(1,form);
+		content.addClassName("content");
+		content.setSizeFull();
+		return content;
 	}
 
 	@Override
@@ -136,8 +164,11 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		countLabel.setText(String.format("Count: %s / %s", items, count));
 	}
 
+
 	public void EditorForSingleReport()
 	{
 		//this will create a split panel to edit a report
+		form = new ReportForm(Collections.emptyList(),Collections.emptyList());
+		form.setWidth("25em");
 	}
 }
