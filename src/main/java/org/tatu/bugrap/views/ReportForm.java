@@ -51,22 +51,26 @@ public class ReportForm extends VerticalLayout {
         version.setItems(versions);
         version.setItemLabelGenerator(ProjectVersion::getVersion);
 
+        Component buttons = createButtonLayout();
+
         HorizontalLayout layout = new HorizontalLayout(summary,openBtn);
         HorizontalLayout layout2 = new HorizontalLayout( priority,
                 type,
                 status,
                 assigned,
                 version,
-                createButtonLayout()
+                buttons
         );
 
         layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         layout2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-        description.setWidth("300%");
+        description.setWidth("400%");
         openBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         openBtn.getElement().getStyle().set("margin-left", "auto");
-
+        buttons.getElement().getStyle().set("margin-left", "auto");
+        layout.setWidth("400%");
+        layout2.setWidth("400%");
         add( layout, layout2, description);
 
     }

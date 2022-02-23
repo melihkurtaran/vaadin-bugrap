@@ -26,6 +26,8 @@ import com.vaadin.flow.router.Route;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @PageTitle("Bugrap Home")
 @Route(value = "")
@@ -94,6 +96,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		projectSelection.addValueChangeListener(event -> {
 			selectedProject = event.getValue();
 			ProjectVersion v = new ProjectVersion();
+			versions.clear();
 			v.setVersion("All versions");
 			versions.add(v);
 			versions.addAll(presenter.requestProjectVersionsByProject(selectedProject));
@@ -120,7 +123,9 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		// filter reports by version
 		versionSelection.addValueChangeListener(version -> {
-			dataView = grid.setItems(query -> presenter.requestReportsByVersion(version.getValue(), query));
+
+//			dataView = grid.setItems(query -> presenter.requestReportsByVersion(version.getValue(), query));
+
 //			List<Report> reportList = new ArrayList<Report>();
 //			dataView.getItems().forEach(report -> {
 //				if (report.getVersion().equals(version))
