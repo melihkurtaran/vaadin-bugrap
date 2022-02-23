@@ -6,9 +6,6 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.PageTitle;
 import org.vaadin.bugrap.domain.entities.Project;
@@ -24,10 +21,12 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
+import org.vaadin.bugrap.domain.entities.Reporter;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @PageTitle("Bugrap Home")
 @Route(value = "")
@@ -42,6 +41,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private ComboBox<Project> projectSelection;
 	private ComboBox<ProjectVersion> versionSelection;
 	private Project selectedProject;
+	private List<ProjectVersion> versions;
 	private Button buttonReportBug;
 	private Button buttonReqFeature;
 	private Button buttonMngProject;
@@ -51,6 +51,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	public BugrapViewImpl(BugrapPresenter presenter) {
 		this.presenter = presenter;
 		presenter.setView(this);
+		versions = new ArrayList<ProjectVersion>();
 
 		setSizeFull();
 		grid = new Grid<>(Report.class);
@@ -73,6 +74,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			if(selectionEvent.getAllSelectedItems().size()==1) {
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " item selected");
 				form.setVisible(true);
+				form.setReport(selectionEvent.getFirstSelectedItem().get());
 			}
 			else if(selectionEvent.getAllSelectedItems().size()!=1) {
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
@@ -88,7 +90,6 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		projectSelection.setPlaceholder("Select a project");
 		projectSelection.addValueChangeListener(event -> {
 			selectedProject = event.getValue();
-			List<ProjectVersion> versions = new ArrayList<ProjectVersion>();
 			ProjectVersion v = new ProjectVersion();
 			v.setVersion("All versions");
 			versions.add(v);
@@ -168,7 +169,24 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	public void EditorForSingleReport()
 	{
 		//this will create a split panel to edit a report
-		form = new ReportForm(Collections.emptyList(),Collections.emptyList());
+
+		form = new ReportForm(Collections.EMPTY_LIST, versions);
 		form.setWidth("25em");
+
+		form.addListener(ReportForm.SaveEvent.class, this::saveReport);
+		form.addListener(ReportForm.CloseEvent.class, closeEvent -> closeEditor());
+	}
+
+	public void updateList(){
+		if(projectSelection.getValue() != null)
+			grid.setItems(presenter.requestReportsByProject(selectedProject));
+		else
+			grid.setItems(query -> presenter.requestReports("", query));
+	}
+
+	public void saveReport(ReportForm.SaveEvent event){
+		presenter.saveReport(event.getReport());
+		updateList();
+		closeEditor();
 	}
 }

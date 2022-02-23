@@ -11,12 +11,14 @@ import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.vaadin.bugrap.domain.entities.Project;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
+import org.vaadin.bugrap.domain.entities.Reporter;
 import org.vaadin.bugrap.domain.spring.ProjectRepository;
 import org.vaadin.bugrap.domain.spring.ProjectVersionRepository;
 import org.vaadin.bugrap.domain.spring.ReportRepository;
 
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.spring.annotation.RouteScope;
+import org.vaadin.bugrap.domain.spring.ReporterRepository;
 
 @Component
 @RouteScope
@@ -25,14 +27,16 @@ public class BugrapPresenter {
 	private ReportRepository reportRepository;
 	private ProjectRepository projectRepository;
 	private ProjectVersionRepository projectVersionRepository;
+	private ReporterRepository reporterRepository;
 	private BugrapView view;
 
 	public BugrapPresenter(ReportRepository reportRepository, ProjectRepository projectRepository,
-						   ProjectVersionRepository projectVersionRepository) {
+						   ProjectVersionRepository projectVersionRepository, ReporterRepository reporterRepository) {
 
 		this.reportRepository = reportRepository;
 		this.projectRepository = projectRepository;
 		this.projectVersionRepository = projectVersionRepository;
+		this.reportRepository = reportRepository;
 	}
 
 	//requesting reports without using projects
@@ -45,7 +49,7 @@ public class BugrapPresenter {
 		return reportRepository.findAll(example, PageRequest.of(query.getPage(), query.getPageSize())).stream();
 	}
 
-	//requesting reports without using projects
+	//requesting reports with using versions
 	public Stream<Report> requestReportsByVersion(ProjectVersion filter, Query<Report, ?> query) {
 		Report report = new Report();
 		report.setVersion(filter);
@@ -65,6 +69,10 @@ public class BugrapPresenter {
 		return projectRepository.findAll().stream();
 	}
 
+	public Stream<Reporter> requestReporters() {
+		return reporterRepository.findAll().stream();
+	}
+
 	public List<Report> requestReportsByProject(Project p) {
 		return reportRepository.findAllByProject(p);
 	}
@@ -76,5 +84,14 @@ public class BugrapPresenter {
 	
 	public void setView(BugrapView view) {
 		this.view = view;
+	}
+
+	public void saveReport(Report report){
+		if(report == null){
+			System.err.println("Report is null.");
+			return;
+		}
+		reportRepository.save(report);
+
 	}
 }
