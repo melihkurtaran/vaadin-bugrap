@@ -53,7 +53,7 @@ public class ReportForm extends VerticalLayout {
         version.setItems(versions);
         version.setItemLabelGenerator(ProjectVersion::getVersion);
 
-        Component buttons = createButtonLayout();
+        HorizontalLayout buttons = new HorizontalLayout(createButtonLayout());
 
         HorizontalLayout layout = new HorizontalLayout(summary,openBtn);
         HorizontalLayout layout2 = new HorizontalLayout( priority,
@@ -64,15 +64,16 @@ public class ReportForm extends VerticalLayout {
                 buttons
         );
 
-
         layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         layout2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-        description.setWidth("400%");
+        description.setWidth("50%");
+        description.setMaxHeight("50%");
 
         openBtn.getElement().getStyle().set("margin-left", "auto");
         buttons.getElement().getStyle().set("margin-left", "auto");
-        layout.setWidth("400%");
-        layout2.setWidth("400%");
+        layout.setWidthFull();
+        layout2.setWidthFull();
+        this.setWidthFull();
         add( layout, layout2, description);
 
     }

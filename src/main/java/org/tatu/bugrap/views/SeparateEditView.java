@@ -54,6 +54,7 @@ public class SeparateEditView extends VerticalLayout implements BeforeEnterObser
         version.setItemLabelGenerator(ProjectVersion::getVersion);
 
         report = BugrapViewImpl.getSelectedReport();
+
         projectName.setText(report.getProject().getName());
         summary.setText(report.getSummary());
         description.setValue(report.getDescription());
@@ -96,18 +97,17 @@ public class SeparateEditView extends VerticalLayout implements BeforeEnterObser
         projectVersion.getElement().getStyle().set("margin-left", "auto");
         add(level1);
         add(summary);
-
+        HorizontalLayout buttons = new HorizontalLayout(save,revert);
         HorizontalLayout level2 = new HorizontalLayout( priority,
                 type,
                 status,
                 assigned,
                 version,
-                save,
-                revert
+                buttons
         );
-
-
         level2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
+        level2.setWidthFull();
+        buttons.getStyle().set("margin-left","auto");
         HorizontalLayout descLayout = new HorizontalLayout(description);
         descLayout.setWidth("50%");
         description.setWidthFull();
@@ -119,8 +119,9 @@ public class SeparateEditView extends VerticalLayout implements BeforeEnterObser
     // if user tries to access edit page without selection of a report then reroute to home
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        if(BugrapViewImpl.getSelectedReport().equals(null))
-            event.rerouteTo("Home",BugrapViewImpl.class);
+        report = BugrapViewImpl.getSelectedReport();
+        if(report == null)
+            event.rerouteTo(BugrapViewImpl.class);
     }
 
     private void validateAndSave() {

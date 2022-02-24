@@ -180,7 +180,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		//this will create a split panel to edit a report
 
 		form = new ReportForm(Collections.EMPTY_LIST, versions);
-		form.setWidth("25em");
+		form.setWidthFull();
+		form.setMaxHeight("50%");
 
 		form.addListener(ReportForm.SaveEvent.class, this::saveReport);
 		form.addListener(ReportForm.CloseEvent.class, closeEvent -> closeEditor());
