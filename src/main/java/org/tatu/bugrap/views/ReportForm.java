@@ -14,6 +14,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.Registration;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
@@ -21,13 +22,14 @@ import org.vaadin.bugrap.domain.entities.Reporter;
 
 import java.util.List;
 
+
 public class ReportForm extends VerticalLayout {
 
     Binder<Report> binder = new BeanValidationBinder<>(Report.class);
 
     H3 summary = new H3("");
     TextArea description = new TextArea("");
-    Button openBtn = new Button("Open");
+    RouterLink openBtn = new RouterLink("Open",SeparateEditView.class);
     ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
     ComboBox<Report.Type> type = new ComboBox<>("Type");
     ComboBox<Report.Status> status = new ComboBox<>("Status");
@@ -62,10 +64,10 @@ public class ReportForm extends VerticalLayout {
                 buttons
         );
 
+
         layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         layout2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         description.setWidth("400%");
-        openBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         openBtn.getElement().getStyle().set("margin-left", "auto");
         buttons.getElement().getStyle().set("margin-left", "auto");

@@ -26,8 +26,6 @@ import com.vaadin.flow.router.Route;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @PageTitle("Bugrap Home")
 @Route(value = "")
@@ -47,6 +45,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private Button buttonReqFeature;
 	private Button buttonMngProject;
 	private ReportForm form;
+
+	private static Report selectedReport;
 
 
 	public BugrapViewImpl(BugrapPresenter presenter) {
@@ -75,10 +75,11 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			if(selectionEvent.getAllSelectedItems().size()==1) {
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " item selected");
 				form.setVisible(true);
-				form.setSummary(selectionEvent.getFirstSelectedItem().get().getSummary());
-				form.setDescription(selectionEvent.getFirstSelectedItem().get().getDescription());
+				selectedReport = selectionEvent.getFirstSelectedItem().get();
+				form.setSummary(selectedReport.getSummary());
+				form.setDescription(selectedReport.getDescription());
 
-				form.setReport(selectionEvent.getFirstSelectedItem().get());
+				form.setReport(selectedReport);
 			}
 			else if(selectionEvent.getAllSelectedItems().size()!=1) {
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
@@ -197,4 +198,9 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		updateList();
 		closeEditor();
 	}
+
+	public static Report getSelectedReport() {
+		return selectedReport;
+	}
+
 }
