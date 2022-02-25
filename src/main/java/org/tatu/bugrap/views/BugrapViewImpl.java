@@ -1,6 +1,7 @@
 package org.tatu.bugrap.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.GridSortOrder;
@@ -59,8 +60,13 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		grid.getDataCommunicator().setPagingEnabled(true);
 		grid.setColumns("priority","type","summary","assigned","version");
 		grid.getColumnByKey( "assigned").setHeader("Assigned to");
-		grid.setHeightFull();
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+
+		grid.addItemDoubleClickListener(dblClick -> {
+			selectedReport = dblClick.getItem();
+			UI.getCurrent().navigate(SeparateEditView.class);
+		});
+
 
 		// right now only seconds difference -> will be updated to support mins/hours/days ago
 		grid.addColumn(report -> Math.abs(report.getTimestamp().getTime() - report.getReportedTimestamp().getTime())).setHeader(("Reported"));
@@ -73,20 +79,20 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		grid.addSelectionListener(selectionEvent -> {
 			if(selectionEvent.getAllSelectedItems().size()==1) {
-				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " item selected");
 				closeMultipleEditor();
 				formSingle.setVisible(true);
 				selectedReport = selectionEvent.getFirstSelectedItem().get();
 				formSingle.setSummary(selectedReport.getSummary());
 				formSingle.setDescription(selectedReport.getDescription());
-
 				formSingle.setReport(selectedReport);
 			}
 			else if(selectionEvent.getAllSelectedItems().size()==0) {
 				closeSingleEditor();
+				closeMultipleEditor();
 			}
 			else if(selectionEvent.getAllSelectedItems().size()>1) {
 				formMultiple.setTitle(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
+				formMultiple.setReports(selectionEvent.getAllSelectedItems());
 				closeSingleEditor();
 				formMultiple.setVisible(true);
 			}
@@ -146,6 +152,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		countLabel = new Span();
 		HorizontalLayout horizontalLayout = new HorizontalLayout(buttonReportBug,buttonReqFeature,buttonMngProject,filter);
+		horizontalLayout.setWidthFull();
+		filter.getStyle().set("margin-left","auto");
 		add(horizontalLayout);
 		add(new HorizontalLayout(new Paragraph("Reports for"),versionSelection));
 		add(getContent());
@@ -166,7 +174,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private Component getContent() {
 		VerticalLayout content = new VerticalLayout(grid,formSingle,formMultiple,countLabel);
 		content.setFlexGrow(4,grid);
-		content.setFlexGrow(1,formSingle);
+		content.setFlexGrow(2,formSingle);
 		content.setFlexGrow(1,formMultiple);
 		content.addClassName("content");
 		content.setSizeFull();

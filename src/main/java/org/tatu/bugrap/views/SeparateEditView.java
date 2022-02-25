@@ -15,6 +15,7 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.shared.Registration;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
@@ -25,7 +26,7 @@ import java.util.Collections;
 
 @PageTitle("Edit Report")
 @Route(value = "Edit")
-public class SeparateEditView extends VerticalLayout implements BeforeEnterObserver
+public class SeparateEditView extends VerticalLayout implements AfterNavigationObserver
 {
     H3 projectName = new H3("");
     H3 projectVersion = new H3("");
@@ -121,17 +122,6 @@ public class SeparateEditView extends VerticalLayout implements BeforeEnterObser
 
     }
 
-    // if user tries to access edit page without selection of a report then reroute to home
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        report = BugrapViewImpl.getSelectedReport();
-        if(report == null)
-
-            //one of them should send back to main page
-            event.rerouteTo(BugrapViewImpl.class);
-            UI.getCurrent().navigate(BugrapViewImpl.class);
-    }
-
     private void validateAndSave() {
         try {
             binder.writeBean(report);
@@ -139,6 +129,14 @@ public class SeparateEditView extends VerticalLayout implements BeforeEnterObser
         } catch (ValidationException e){
             e.printStackTrace();
         }
+    }
+
+    // if user tries to access edit page without selection of a report then reroute to home
+    @Override
+    public void afterNavigation(AfterNavigationEvent afterNavigationEvent) {
+        report = BugrapViewImpl.getSelectedReport();
+        if(report == null)
+            UI.getCurrent().navigate(BugrapViewImpl.class);
     }
 
     // Events

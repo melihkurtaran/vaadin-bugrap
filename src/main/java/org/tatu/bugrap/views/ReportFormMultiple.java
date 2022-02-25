@@ -16,12 +16,13 @@ import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
 
 import java.util.List;
+import java.util.Set;
 
 public class ReportFormMultiple extends VerticalLayout
 {
     Binder<Report> binder = new BeanValidationBinder<>(Report.class);
     H3 title = new H3("");
-    private List<Report> reports;
+    private Set<Report> reports;
 
     TextArea description = new TextArea("");
     Button openBtn = new Button("Open");
@@ -73,4 +74,7 @@ public class ReportFormMultiple extends VerticalLayout
         title.add(s);
     }
 
+    public void setReports(Set<Report> allSelectedReports) {
+        reports = allSelectedReports;
+    }
 }
