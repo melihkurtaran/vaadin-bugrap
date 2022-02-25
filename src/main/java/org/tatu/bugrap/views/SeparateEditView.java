@@ -3,6 +3,7 @@ package org.tatu.bugrap.views;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -23,7 +24,7 @@ import java.util.Collections;
 
 
 @PageTitle("Edit Report")
-@Route(value="Edit")
+@Route(value = "Edit")
 public class SeparateEditView extends VerticalLayout implements BeforeEnterObserver
 {
     H3 projectName = new H3("");
@@ -82,11 +83,15 @@ public class SeparateEditView extends VerticalLayout implements BeforeEnterObser
         revert.addThemeVariants(ButtonVariant.MATERIAL_CONTAINED);
         revert.addClickShortcut(Key.ESCAPE);
         //Button Actions
-        save.addClickListener(buttonClickEvent -> validateAndSave());
+        save.addClickListener(buttonClickEvent -> {
+            validateAndSave();
+            UI.getCurrent().navigate(BugrapViewImpl.class);
+        });
+
         revert.addClickListener(buttonClickEvent -> {
             fireEvent(new SeparateEditView.CloseEvent(this));
             // route to main page
-
+            UI.getCurrent().navigate(BugrapViewImpl.class);
         });
 
 
@@ -121,7 +126,10 @@ public class SeparateEditView extends VerticalLayout implements BeforeEnterObser
     public void beforeEnter(BeforeEnterEvent event) {
         report = BugrapViewImpl.getSelectedReport();
         if(report == null)
+
+            //one of them should send back to main page
             event.rerouteTo(BugrapViewImpl.class);
+            UI.getCurrent().navigate(BugrapViewImpl.class);
     }
 
     private void validateAndSave() {

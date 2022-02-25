@@ -1,9 +1,6 @@
 package org.tatu.bugrap.views;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -29,7 +26,7 @@ public class ReportForm extends VerticalLayout {
 
     H3 summary = new H3("");
     TextArea description = new TextArea("");
-    RouterLink openBtn = new RouterLink("Open",SeparateEditView.class);
+    Button openBtn = new Button("Open");
     ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
     ComboBox<Report.Type> type = new ComboBox<>("Type");
     ComboBox<Report.Status> status = new ComboBox<>("Status");
@@ -53,6 +50,11 @@ public class ReportForm extends VerticalLayout {
         version.setItems(versions);
         version.setItemLabelGenerator(ProjectVersion::getVersion);
 
+        openBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        openBtn.addClickListener(buttonClickEvent -> {
+            UI.getCurrent().navigate(SeparateEditView.class);
+        });
+
         HorizontalLayout buttons = new HorizontalLayout(createButtonLayout());
 
         HorizontalLayout layout = new HorizontalLayout(summary,openBtn);
@@ -75,6 +77,10 @@ public class ReportForm extends VerticalLayout {
         layout2.setWidthFull();
         this.setWidthFull();
         add( layout, layout2, description);
+
+    }
+
+    public ReportForm() {
 
     }
 

@@ -12,7 +12,6 @@ import com.vaadin.flow.router.PageTitle;
 import org.vaadin.bugrap.domain.entities.Project;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
-
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridLazyDataView;
 import com.vaadin.flow.component.html.Span;
@@ -44,7 +43,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private Button buttonReportBug;
 	private Button buttonReqFeature;
 	private Button buttonMngProject;
-	private ReportForm form;
+	private ReportForm formSingle;
+	private ReportFormMultiple formMultiple;
 
 	private static Report selectedReport;
 
@@ -59,7 +59,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		grid.getDataCommunicator().setPagingEnabled(true);
 		grid.setColumns("priority","type","summary","assigned","version");
 		grid.getColumnByKey( "assigned").setHeader("Assigned to");
-		grid.setHeight("500px");
+		grid.setHeightFull();
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
 
 		// right now only seconds difference -> will be updated to support mins/hours/days ago
@@ -74,22 +74,26 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		grid.addSelectionListener(selectionEvent -> {
 			if(selectionEvent.getAllSelectedItems().size()==1) {
 				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " item selected");
-				form.setVisible(true);
+				closeMultipleEditor();
+				formSingle.setVisible(true);
 				selectedReport = selectionEvent.getFirstSelectedItem().get();
-				form.setSummary(selectedReport.getSummary());
-				form.setDescription(selectedReport.getDescription());
+				formSingle.setSummary(selectedReport.getSummary());
+				formSingle.setDescription(selectedReport.getDescription());
 
-				form.setReport(selectedReport);
+				formSingle.setReport(selectedReport);
 			}
-			else if(selectionEvent.getAllSelectedItems().size()!=1) {
-				Notification.show(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
-				closeEditor();
+			else if(selectionEvent.getAllSelectedItems().size()==0) {
+				closeSingleEditor();
+			}
+			else if(selectionEvent.getAllSelectedItems().size()>1) {
+				formMultiple.setTitle(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
+				closeSingleEditor();
+				formMultiple.setVisible(true);
 			}
 		}) ;
 
 		//version Selection for the grid
 		versionSelection = new ComboBox<>("");
-
 
 		projectSelection = new ComboBox<>();
 		projectSelection.setWidth("50%");
@@ -135,25 +139,35 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 //			grid.setItems(reportList);
 		});
 
+		EditorForSingleReport();
+		EditorMultipleReport();
+		formSingle.setVisible(false);
+		formMultiple.setVisible(false);
+
 		countLabel = new Span();
 		HorizontalLayout horizontalLayout = new HorizontalLayout(buttonReportBug,buttonReqFeature,buttonMngProject,filter);
 		add(horizontalLayout);
 		add(new HorizontalLayout(new Paragraph("Reports for"),versionSelection));
-		EditorForSingleReport();
-		closeEditor();
 		add(getContent());
 		this.setFlexGrow(1, grid);
+
+
 	}
 
-	private void closeEditor() {
-		form.setReport(null);
-		form.setVisible(false);
+	private void closeSingleEditor() {
+		formSingle.setReport(null);
+		formSingle.setVisible(false);
+	}
+
+	private void closeMultipleEditor() {
+		formMultiple.setVisible(false);
 	}
 
 	private Component getContent() {
-		VerticalLayout content = new VerticalLayout(grid,form,countLabel);
+		VerticalLayout content = new VerticalLayout(grid,formSingle,formMultiple,countLabel);
 		content.setFlexGrow(4,grid);
-		content.setFlexGrow(1,form);
+		content.setFlexGrow(1,formSingle);
+		content.setFlexGrow(1,formMultiple);
 		content.addClassName("content");
 		content.setSizeFull();
 		return content;
@@ -179,12 +193,19 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	{
 		//this will create a split panel to edit a report
 
-		form = new ReportForm(Collections.EMPTY_LIST, versions);
-		form.setWidthFull();
-		form.setMaxHeight("50%");
+		formSingle = new ReportForm(Collections.EMPTY_LIST, versions);
+		formSingle.setWidthFull();
+		formSingle.setMaxHeight("50%");
 
-		form.addListener(ReportForm.SaveEvent.class, this::saveReport);
-		form.addListener(ReportForm.CloseEvent.class, closeEvent -> closeEditor());
+		formSingle.addListener(ReportForm.SaveEvent.class, this::saveReport);
+		formSingle.addListener(ReportForm.CloseEvent.class, closeEvent -> closeSingleEditor());
+	}
+
+	public void EditorMultipleReport()
+	{
+		//this will create a split panel to edit multiple report
+		formMultiple = new ReportFormMultiple(Collections.EMPTY_LIST, versions);
+		formSingle.setWidthFull();
 	}
 
 	public void updateList(){
@@ -197,7 +218,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	public void saveReport(ReportForm.SaveEvent event){
 		presenter.saveReport(event.getReport());
 		updateList();
-		closeEditor();
+		closeSingleEditor();
 	}
 
 	public static Report getSelectedReport() {
