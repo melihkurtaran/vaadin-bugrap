@@ -122,7 +122,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			versions.addAll(presenter.requestProjectVersionsByProject(selectedProject));
 			versionSelection.setItems(versions);
 			versionSelection.setValue(v); //to start as all versions selected
-			grid.setItems(presenter.requestReportsByProject(selectedProject));
+			grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,query));
 			dataView.refreshAll();
 		});
 		add(projectSelection);
@@ -145,10 +145,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		// filter reports by version
 		versionSelection.addValueChangeListener(version -> {
 			selectedVersion = version.getValue();
-			if (version.getValue().getVersion().equals("All Versions"))
-				grid.setItems(presenter.requestReportsByProject(selectedProject));
-			else
-				grid.setItems(query -> presenter.requestReportsByVersionAndProject(version.getValue(),selectedProject, query));
+			grid.setItems(query -> presenter.requestReports(selectedStatuses,version.getValue(),selectedProject, query));
 		});
 
 		//Status Bar
@@ -162,7 +159,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			else
 				selectedStatuses.remove(event.getSource().getText());
 			Notification.show(Arrays.toString(selectedStatuses.toArray()));
-			grid.setItems(query -> presenter.requestReportsByStatus(selectedStatuses,selectedVersion,selectedProject, query));
+			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject, query));
 
 		};
 
@@ -171,7 +168,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			item.setCheckable(true);
 			item.setChecked(true);
 			item.addClickListener(listener);
-			selectedStatuses.add(status.name());
+			selectedStatuses.add(status.toString());
 		}
 
 

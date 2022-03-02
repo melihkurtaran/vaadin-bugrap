@@ -1,9 +1,11 @@
 package org.tatu.bugrap.views;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.notification.Notification;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
@@ -50,27 +52,21 @@ public class BugrapPresenter {
 		return reportRepository.findAll(example, PageRequest.of(query.getPage(), query.getPageSize())).stream();
 	}
 
-	//requesting reports with using its versions and the project
-	public Stream<Report> requestReportsByVersionAndProject(ProjectVersion version,Project p, Query<Report, ?> query) {
-		return reportRepository.findAll(PageRequest.of(query.getPage(),
-				query.getPageSize())).stream().filter(r -> {
-					if(r.getVersion() != null && r.getProject() != null
-							&& r.getVersion().getVersion().equals(version.getVersion())
-							&& r.getProject().getName().equals(p.getName())) {
-						return true;
-					}else
-						return false;
-		});
-	}
-
 	//requesting reports with using its statuses, versions and the project
-	public Stream<Report> requestReportsByStatus(List<String> statuses, ProjectVersion version,Project p, Query<Report, ?> query) {
+	public Stream<Report> requestReports(List<String> statuses, ProjectVersion version,Project p, Query<Report, ?> query) {
+
+		if (version == null) {
+			version = new ProjectVersion();
+			version.setVersion("All Versions");
+		}
+		ProjectVersion finalVersion = version;
+
 		return reportRepository.findAll(PageRequest.of(query.getPage(),
 				query.getPageSize())).stream().filter(r -> {
-			if(r.getVersion() != null && r.getProject() != null && r.getStatus() != null && version != null && p != null
-					&& r.getVersion().getVersion().equals(version.getVersion())
+			if( r.getProject() != null && p != null
+					&& ( finalVersion.getVersion().equals("All Versions") || (r.getVersion() != null && r.getVersion().getVersion().equals(finalVersion.getVersion())))
 					&& r.getProject().getName().equals(p.getName())
-					&& statuses.contains(r.getStatus().name())){
+					&& ( r.getStatus() == null || statuses.contains(r.getStatus().toString()))){
 				return true;
 			}else
 				return false;
