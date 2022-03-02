@@ -1,6 +1,7 @@
 package org.tatu.bugrap.views;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.data.domain.Example;
@@ -49,14 +50,17 @@ public class BugrapPresenter {
 		return reportRepository.findAll(example, PageRequest.of(query.getPage(), query.getPageSize())).stream();
 	}
 
-	//requesting reports with using versions
-	public Stream<Report> requestReportsByVersion(ProjectVersion filter, Query<Report, ?> query) {
-		Report report = new Report();
-		report.setVersion(filter);
-		Example<Report> example = Example.of(report,
-				ExampleMatcher.matching().withMatcher("version", GenericPropertyMatchers.exact()));
-
-		return reportRepository.findAll(example, PageRequest.of(query.getPage(), query.getPageSize())).stream();
+	//requesting reports with using its versions and the project
+	public Stream<Report> requestReportsByVersionAndProject(ProjectVersion version,Project p, Query<Report, ?> query) {
+		return reportRepository.findAll(PageRequest.of(query.getPage(),
+				query.getPageSize())).stream().filter(r -> {
+					if(r.getVersion() != null && r.getProject() != null
+							&& r.getVersion().getVersion().equals(version.getVersion())
+							&& r.getProject().getName().equals(p.getName())) {
+						return true;
+					}else
+						return false;
+		});
 	}
 
 	public int requestReportCount() {

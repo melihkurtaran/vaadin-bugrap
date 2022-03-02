@@ -6,7 +6,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.PageTitle;
@@ -108,7 +107,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			selectedProject = event.getValue();
 			ProjectVersion v = new ProjectVersion();
 			versions.clear();
-			v.setVersion("All versions");
+			v.setVersion("All Versions");
 			versions.add(v);
 			versions.addAll(presenter.requestProjectVersionsByProject(selectedProject));
 			versionSelection.setItems(versions);
@@ -134,15 +133,10 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		// filter reports by version
 		versionSelection.addValueChangeListener(version -> {
-
-//			dataView = grid.setItems(query -> presenter.requestReportsByVersion(version.getValue(), query));
-
-//			List<Report> reportList = new ArrayList<Report>();
-//			dataView.getItems().forEach(report -> {
-//				if (report.getVersion().equals(version))
-//					reportList.add(report);
-//			});
-//			grid.setItems(reportList);
+			if (version.getValue().getVersion().equals("All Versions"))
+				grid.setItems(presenter.requestReportsByProject(selectedProject));
+			else
+				grid.setItems(query -> presenter.requestReportsByVersionAndProject(version.getValue(),selectedProject, query));
 		});
 
 		EditorForSingleReport();
