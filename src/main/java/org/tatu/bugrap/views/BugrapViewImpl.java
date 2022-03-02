@@ -1,11 +1,17 @@
 package org.tatu.bugrap.views;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.PageTitle;
@@ -23,6 +29,7 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,12 +46,15 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private ComboBox<Project> projectSelection;
 	private ComboBox<ProjectVersion> versionSelection;
 	private Project selectedProject;
+	private ProjectVersion selectedVersion;
 	private List<ProjectVersion> versions;
 	private Button buttonReportBug;
 	private Button buttonReqFeature;
 	private Button buttonMngProject;
 	private ReportForm formSingle;
 	private ReportFormMultiple formMultiple;
+	private MenuBar StatusBar = new MenuBar();
+	private List<String> selectedStatuses = new ArrayList<>();
 
 	private static Report selectedReport;
 
@@ -113,6 +123,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			versionSelection.setItems(versions);
 			versionSelection.setValue(v); //to start as all versions selected
 			grid.setItems(presenter.requestReportsByProject(selectedProject));
+			dataView.refreshAll();
 		});
 		add(projectSelection);
 
@@ -133,11 +144,37 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		// filter reports by version
 		versionSelection.addValueChangeListener(version -> {
+			selectedVersion = version.getValue();
 			if (version.getValue().getVersion().equals("All Versions"))
 				grid.setItems(presenter.requestReportsByProject(selectedProject));
 			else
 				grid.setItems(query -> presenter.requestReportsByVersionAndProject(version.getValue(),selectedProject, query));
 		});
+
+		//Status Bar
+		MenuItem options = StatusBar.addItem("Custom...");
+		SubMenu subItems = options.getSubMenu();
+
+		ComponentEventListener<ClickEvent<MenuItem>> listener = event -> {
+
+			if (event.getSource().isChecked())
+				selectedStatuses.add(event.getSource().getText());
+			else
+				selectedStatuses.remove(event.getSource().getText());
+			Notification.show(Arrays.toString(selectedStatuses.toArray()));
+			grid.setItems(query -> presenter.requestReportsByStatus(selectedStatuses,selectedVersion,selectedProject, query));
+
+		};
+
+		for (Report.Status status : Report.Status.values()) {
+			MenuItem item = subItems.addItem(status.toString());
+			item.setCheckable(true);
+			item.setChecked(true);
+			item.addClickListener(listener);
+			selectedStatuses.add(status.name());
+		}
+
+
 
 		EditorForSingleReport();
 		EditorMultipleReport();
@@ -150,6 +187,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		filter.getStyle().set("margin-left","auto");
 		add(horizontalLayout);
 		add(new HorizontalLayout(new Paragraph("Reports for"),versionSelection));
+		add(StatusBar);
 		add(getContent());
 		this.setFlexGrow(1, grid);
 

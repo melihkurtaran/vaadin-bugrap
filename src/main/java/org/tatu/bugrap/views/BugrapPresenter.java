@@ -63,6 +63,20 @@ public class BugrapPresenter {
 		});
 	}
 
+	//requesting reports with using its statuses, versions and the project
+	public Stream<Report> requestReportsByStatus(List<String> statuses, ProjectVersion version,Project p, Query<Report, ?> query) {
+		return reportRepository.findAll(PageRequest.of(query.getPage(),
+				query.getPageSize())).stream().filter(r -> {
+			if(r.getVersion() != null && r.getProject() != null && r.getStatus() != null && version != null && p != null
+					&& r.getVersion().getVersion().equals(version.getVersion())
+					&& r.getProject().getName().equals(p.getName())
+					&& statuses.contains(r.getStatus().name())){
+				return true;
+			}else
+				return false;
+		});
+	}
+
 	public int requestReportCount() {
 		int count = (int) reportRepository.count();
 		view.setCount(count);
