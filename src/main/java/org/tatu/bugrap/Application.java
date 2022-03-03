@@ -10,6 +10,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 import org.vaadin.bugrap.domain.spring.DBTools;
@@ -21,7 +22,8 @@ import org.vaadin.bugrap.domain.spring.DBTools;
  * and some desktop browsers.
  *
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
+@NpmPackage(value = "lumo-css-framework", version = "^4.0.10")
 @Theme(value = "bugrap")
 @PWA(name = "Bugrap", shortName = "Bugrap", offlineResources = { "images/logo.png" })
 @NpmPackage(value = "line-awesome", version = "1.3.0")

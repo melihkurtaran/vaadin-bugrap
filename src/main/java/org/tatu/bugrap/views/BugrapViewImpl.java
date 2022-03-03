@@ -5,6 +5,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
@@ -15,6 +16,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.PageTitle;
+import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
+import org.tatu.bugrap.security.SecurityService;
 import org.vaadin.bugrap.domain.entities.Project;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
@@ -28,6 +31,7 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
 
+import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +39,7 @@ import java.util.List;
 
 @PageTitle("Bugrap Home")
 @Route(value = "")
+@PermitAll
 public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterNavigationObserver {
 
 	private Grid<Report> grid;
@@ -55,12 +60,14 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private ReportFormMultiple formMultiple;
 	private MenuBar StatusBar = new MenuBar();
 	private List<String> selectedStatuses = new ArrayList<>();
+	private SecurityService securityService;
 
 	private static Report selectedReport;
 
 
-	public BugrapViewImpl(BugrapPresenter presenter) {
+	public BugrapViewImpl(BugrapPresenter presenter, SecurityService securityService) {
 		this.presenter = presenter;
+		this.securityService = securityService;
 		presenter.setView(this);
 		versions = new ArrayList<ProjectVersion>();
 
@@ -125,7 +132,14 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,query));
 			dataView.refreshAll();
 		});
-		add(projectSelection);
+
+		Button logOutBtn = new Button("Log out", e -> securityService.logout());
+		logOutBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
+		HorizontalLayout level1 = new HorizontalLayout(projectSelection,logOutBtn);
+		level1.setWidthFull();
+		logOutBtn.getStyle().set("margin-left","auto");
+
+		add(level1);
 
 		//buttons
 		buttonReportBug = new Button("Report a bug");

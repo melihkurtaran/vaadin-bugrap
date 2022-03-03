@@ -21,11 +21,13 @@ import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
 
+import javax.annotation.security.PermitAll;
 import java.util.Collections;
 
 
 @PageTitle("Edit Report")
 @Route(value = "Edit")
+@PermitAll
 public class SeparateEditView extends VerticalLayout implements AfterNavigationObserver
 {
     H3 projectName = new H3("");

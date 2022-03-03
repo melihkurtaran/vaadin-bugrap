@@ -120,7 +120,8 @@
     "construct-style-sheets-polyfill": "3.0.4",
     "date-fns": "2.23.0",
     "line-awesome": "1.3.0",
-    "lit": "2.0.0"
+    "lit": "2.0.0",
+    "lumo-css-framework": "^4.0.10"
   },
   "devDependencies": {
     "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
@@ -267,7 +268,8 @@
       "construct-style-sheets-polyfill": "3.0.4",
       "date-fns": "2.23.0",
       "line-awesome": "1.3.0",
-      "lit": "2.0.0"
+      "lit": "2.0.0",
+      "lumo-css-framework": "^4.0.10"
     },
     "devDependencies": {
       "chokidar": "^3.5.0",
@@ -291,7 +293,7 @@
       "workbox-precaching": "6.4.2",
       "workbox-webpack-plugin": "6.4.2"
     },
-    "hash": "4eae0670e970d8b513eb0c30eae69f6d24636a3725a96e7f1a4981c5437a671d"
+    "hash": "b39b04a79a92848802b8487e415be3b73861acf00a1c41d28759366a3f0918d8"
   },
   "overrides": {
     "@vaadin/accordion": "$@vaadin/accordion",
