@@ -247,7 +247,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 	public void updateList(){
 		if(projectSelection.getValue() != null)
-			grid.setItems(presenter.requestReportsByProject(selectedProject));
+			grid.setItems(query ->presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,query));
 		else
 			grid.setItems(query -> presenter.requestReports("", query));
 	}

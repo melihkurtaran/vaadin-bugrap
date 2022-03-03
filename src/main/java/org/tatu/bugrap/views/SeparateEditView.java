@@ -45,7 +45,7 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
 
     public SeparateEditView(){
 
-        binder.bindInstanceFields(this);
+
 
         priority.setItems(Report.Priority.values());
         status.setItems(Report.Status.values());
@@ -56,6 +56,7 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         version.setItemLabelGenerator(ProjectVersion::getVersion);
 
         report = BugrapViewImpl.getSelectedReport();
+        binder.readBean(report);
 
         projectName.setText(report.getProject().getName());
         summary.setText(report.getSummary());
@@ -63,6 +64,9 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         priority.setValue(report.getPriority());
         status.setValue(report.getStatus());
         type.setValue(report.getType());
+
+
+        binder.bindInstanceFields(this);
 
         if (report.getAssigned() == null)
             assigned.setPlaceholder("Not Assigned");

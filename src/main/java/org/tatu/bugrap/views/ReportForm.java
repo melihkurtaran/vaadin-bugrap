@@ -11,8 +11,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.Registration;
+import org.atmosphere.cpr.Action;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
@@ -52,6 +52,7 @@ public class ReportForm extends VerticalLayout {
 
         openBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         openBtn.addClickListener(buttonClickEvent -> {
+
             UI.getCurrent().navigate(SeparateEditView.class);
         });
 
@@ -70,6 +71,10 @@ public class ReportForm extends VerticalLayout {
         layout2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         description.setWidth("50%");
         description.setMaxHeight("50%");
+
+
+
+        openBtn.addClickShortcut(Key.ENTER,KeyModifier.CONTROL);
 
         openBtn.getElement().getStyle().set("margin-left", "auto");
         buttons.getElement().getStyle().set("margin-left", "auto");
