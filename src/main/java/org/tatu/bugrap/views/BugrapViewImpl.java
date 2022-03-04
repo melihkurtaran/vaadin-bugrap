@@ -84,8 +84,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		});
 
 
-		// right now only seconds difference -> will be updated to support mins/hours/days ago
-		grid.addColumn(report -> Math.abs(report.getTimestamp().getTime() - report.getReportedTimestamp().getTime())).setHeader(("Reported"));
+		// this will be updated to support mins/hours/days ago
+		grid.addColumn(report -> new java.text.SimpleDateFormat("MM/dd/yyyy h:mm").format(report.getReportedTimestamp())).setHeader(("Reported"));
 
 		//Starts as ordered by priority column
 		List<GridSortOrder<Report>> order = new ArrayList<GridSortOrder<Report>>();
@@ -172,7 +172,11 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				selectedStatuses.add(event.getSource().getText());
 			else
 				selectedStatuses.remove(event.getSource().getText());
-			Notification.show(Arrays.toString(selectedStatuses.toArray()));
+
+			if(selectedProject == null)
+				Notification.show("Please choose project first!");
+			else if(selectedVersion == null)
+				Notification.show("Please choose version first!");
 			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject, query));
 
 		};

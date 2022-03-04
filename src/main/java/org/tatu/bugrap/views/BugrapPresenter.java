@@ -11,17 +11,11 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
-import org.vaadin.bugrap.domain.entities.Project;
-import org.vaadin.bugrap.domain.entities.ProjectVersion;
-import org.vaadin.bugrap.domain.entities.Report;
-import org.vaadin.bugrap.domain.entities.Reporter;
-import org.vaadin.bugrap.domain.spring.ProjectRepository;
-import org.vaadin.bugrap.domain.spring.ProjectVersionRepository;
-import org.vaadin.bugrap.domain.spring.ReportRepository;
+import org.vaadin.bugrap.domain.entities.*;
+import org.vaadin.bugrap.domain.spring.*;
 
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.spring.annotation.RouteScope;
-import org.vaadin.bugrap.domain.spring.ReporterRepository;
 
 @Component
 @RouteScope
@@ -31,15 +25,18 @@ public class BugrapPresenter {
 	private ProjectRepository projectRepository;
 	private ProjectVersionRepository projectVersionRepository;
 	private ReporterRepository reporterRepository;
+	private CommentRepository commentRepository;
 	private BugrapView view;
 
 	public BugrapPresenter(ReportRepository reportRepository, ProjectRepository projectRepository,
-						   ProjectVersionRepository projectVersionRepository, ReporterRepository reporterRepository) {
+						   ProjectVersionRepository projectVersionRepository, ReporterRepository reporterRepository
+							, CommentRepository commentRepository) {
 
 		this.reportRepository = reportRepository;
 		this.projectRepository = projectRepository;
 		this.projectVersionRepository = projectVersionRepository;
 		this.reportRepository = reportRepository;
+		this.commentRepository = commentRepository;
 	}
 
 	//requesting reports without using projects
@@ -81,6 +78,10 @@ public class BugrapPresenter {
 
 	public Stream<Project> requestProjects() {
 		return projectRepository.findAll().stream();
+	}
+
+	public List<Comment> requestCommentsByReport(Report report) {
+		return commentRepository.findAllByReport(report);
 	}
 
 	public Stream<Reporter> requestReporters() {

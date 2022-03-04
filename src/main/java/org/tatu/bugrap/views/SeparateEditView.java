@@ -1,28 +1,31 @@
 package org.tatu.bugrap.views;
 
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.avatar.AvatarVariant;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.router.*;
-import com.vaadin.flow.router.internal.AfterNavigationHandler;
-import com.vaadin.flow.shared.Registration;
+import org.vaadin.bugrap.domain.entities.Comment;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
 
 import javax.annotation.security.PermitAll;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 @PageTitle("Edit Report")
@@ -45,6 +48,8 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     Button save = new Button("Save Changes");
     Button revert = new Button("Revert");
     BugrapPresenter bugrapPresenter;
+
+    List<Comment> commentList;
 
     public SeparateEditView(BugrapPresenter bugrapPresenter){
         this.bugrapPresenter = bugrapPresenter;
@@ -123,7 +128,36 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         description.setWidthFull();
         add(level2, descLayout);
 
+        VerticalLayout commentLayout = new VerticalLayout();
+        commentList = bugrapPresenter.requestCommentsByReport(report);
+        commentList.forEach(comment -> commentLayout.add(getCommentLayout(comment)));
 
+        add(commentLayout);
+    }
+
+    private Component getCommentLayout(Comment comment){
+        HorizontalLayout comLayout = new HorizontalLayout();
+        comLayout.setWidthFull();
+        comLayout.getStyle().set("border","1px solid gray").set("border-radius","3px");
+        Paragraph commentDetail = new Paragraph(comment.getComment());
+        commentDetail.getStyle().set("padding","10px");
+        comLayout.add(commentDetail);
+
+        VerticalLayout commentInfo = new VerticalLayout();
+        commentInfo.setSizeFull();
+        commentInfo.setAlignItems(Alignment.END);
+        Avatar avatarAuthor = new Avatar(comment.getAuthor().getName());
+
+        avatarAuthor.addThemeVariants(AvatarVariant.LUMO_XLARGE);
+        avatarAuthor.setColorIndex(ThreadLocalRandom.current().nextInt(1, 8));
+        VerticalLayout userInf = new VerticalLayout(new Paragraph(comment.getAuthor().getName()),new Paragraph( new java.text.SimpleDateFormat("MM/dd/yyyy h:mm").format(comment.getTimestamp())));
+        userInf.setPadding(false);
+
+        commentInfo.add(new HorizontalLayout(avatarAuthor, userInf));
+        commentInfo.add(new Paragraph(comment.getAttachmentName()));
+        comLayout.add(commentInfo);
+
+        return comLayout;
     }
 
     private void validateAndSave() {
