@@ -44,10 +44,10 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
     Button save = new Button("Save Changes");
     Button revert = new Button("Revert");
+    BugrapPresenter bugrapPresenter;
 
-    public SeparateEditView(){
-
-
+    public SeparateEditView(BugrapPresenter bugrapPresenter){
+        this.bugrapPresenter = bugrapPresenter;
 
         priority.setItems(Report.Priority.values());
         status.setItems(Report.Status.values());
@@ -96,7 +96,6 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         });
 
         revert.addClickListener(buttonClickEvent -> {
-            fireEvent(new SeparateEditView.CloseEvent(this));
             // route to main page
             UI.getCurrent().navigate(BugrapViewImpl.class);
         });
@@ -129,12 +128,8 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     }
 
     private void validateAndSave() {
-        try {
-            binder.writeBean(report);
-            fireEvent(new SeparateEditView.SaveEvent(this,report));
-        } catch (ValidationException e){
-            e.printStackTrace();
-        }
+        binder.writeBeanIfValid(report);
+        bugrapPresenter.saveReport(report);
     }
 
     // if user tries to access edit page without selection of a report then reroute to home
@@ -145,42 +140,6 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
             UI.getCurrent().navigate(BugrapViewImpl.class);
     }
 
-    // Events
-    public static abstract class SeparateEditViewEvent extends ComponentEvent<SeparateEditView> {
-        private Report report;
 
-        protected SeparateEditViewEvent(SeparateEditView source, Report report) {
-            super(source, false);
-            this.report = report;
-        }
-
-        public Report getReport() {
-            return report;
-        }
-    }
-
-    public static class SaveEvent extends SeparateEditView.SeparateEditViewEvent {
-        SaveEvent(SeparateEditView source, Report report) {
-            super(source, report);
-        }
-    }
-
-    public static class DeleteEvent extends SeparateEditView.SeparateEditViewEvent {
-        DeleteEvent(SeparateEditView source, Report report) {
-            super(source, report);
-        }
-
-    }
-
-    public static class CloseEvent extends SeparateEditView.SeparateEditViewEvent {
-        CloseEvent(SeparateEditView source) {
-            super(source, null);
-        }
-    }
-
-    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
-                                                                  ComponentEventListener<T> listener) {
-        return getEventBus().addListener(eventType, listener);
-    }
 }
 

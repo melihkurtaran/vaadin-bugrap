@@ -40,10 +40,18 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
     protected UserDetailsService userDetailsService(){
 
 
-        UserDetails user = null;
+        UserDetails user = null, user2 = null, user3 = null;
         try {
             user = User.withUsername("user")
                     .password(PasswordHash.createHash("123456"))
+                    .roles("USER")
+                    .build();
+            user2 = User.withUsername("melih")
+                    .password(PasswordHash.createHash("1"))
+                    .roles("USER")
+                    .build();
+            user3 = User.withUsername("tanja")
+                    .password(PasswordHash.createHash("1"))
                     .roles("USER")
                     .build();
         } catch (NoSuchAlgorithmException e) {
@@ -52,6 +60,6 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
             e.printStackTrace();
         }
 
-        return new InMemoryUserDetailsManager(user);
+        return new InMemoryUserDetailsManager(user,user2,user3);
     }
 }

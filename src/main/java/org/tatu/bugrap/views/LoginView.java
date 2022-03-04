@@ -19,7 +19,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterListener {
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
-
         login.setAction("login");
 
         add(
