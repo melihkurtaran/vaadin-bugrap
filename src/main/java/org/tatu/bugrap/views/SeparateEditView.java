@@ -60,31 +60,30 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         report = BugrapViewImpl.getSelectedReport();
         binder.readBean(report);
 
-        projectName.setText(report.getProject().getName());
-        summary.setText(report.getSummary());
-        description.setValue(report.getDescription());
-        priority.setValue(report.getPriority());
-        status.setValue(report.getStatus());
-        type.setValue(report.getType());
+        if(report != null) {
+            projectName.setText(report.getProject().getName());
+            summary.setText(report.getSummary());
+            description.setValue(report.getDescription());
+            priority.setValue(report.getPriority());
+            status.setValue(report.getStatus());
+            type.setValue(report.getType());
 
+            if (report.getAssigned() == null)
+                assigned.setPlaceholder("Not Assigned");
+            else
+                assigned.setValue(report.getAssigned());
+
+            if (report.getVersion() == null) {
+                version.setPlaceholder("No Version");
+                projectVersion.setText("");
+            }
+            else {
+                version.setValue(report.getVersion());
+                projectVersion.setText(report.getVersion().toString());
+            }
+        }
 
         binder.bindInstanceFields(this);
-
-        if (report.getAssigned() == null)
-            assigned.setPlaceholder("Not Assigned");
-        else
-            assigned.setValue(report.getAssigned());
-
-        if (report.getVersion() == null)
-            version.setPlaceholder("No Version");
-        else
-            version.setValue(report.getVersion());
-
-        if(report.getVersion() == null)
-            projectVersion.setText("");
-        else
-            projectVersion.setText(report.getVersion().toString());
-
 
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         revert.addThemeVariants(ButtonVariant.MATERIAL_CONTAINED);
