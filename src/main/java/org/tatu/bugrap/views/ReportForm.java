@@ -12,7 +12,6 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.shared.Registration;
-import org.atmosphere.cpr.Action;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
@@ -24,17 +23,17 @@ public class ReportForm extends VerticalLayout {
 
     Binder<Report> binder = new BeanValidationBinder<>(Report.class);
 
-    H3 summary = new H3("");
-    TextArea description = new TextArea("");
-    Button openBtn = new Button("Open");
-    ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
-    ComboBox<Report.Type> type = new ComboBox<>("Type");
-    ComboBox<Report.Status> status = new ComboBox<>("Status");
-    ComboBox<ProjectVersion> version = new ComboBox<>("Version");
-    ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
+    private H3 summary = new H3("");
+    private TextArea description = new TextArea("");
+    private Button openBtn = new Button("Open");
+    private ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
+    private ComboBox<Report.Type> type = new ComboBox<>("Type");
+    private ComboBox<Report.Status> status = new ComboBox<>("Status");
+    private ComboBox<ProjectVersion> version = new ComboBox<>("Version");
+    private ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
 
-    Button save = new Button("Save Changes");
-    Button revert = new Button("Revert");
+    private Button save = new Button("Save Changes");
+    private Button revert = new Button("Revert");
     private Report report;
 
 

@@ -109,4 +109,8 @@ public class BugrapPresenter {
 		reportRepository.save(report);
 
 	}
+
+	public void saveComment(Comment comment){
+		commentRepository.save(comment);
+	}
 }

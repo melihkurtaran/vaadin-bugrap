@@ -50,6 +50,8 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     BugrapPresenter bugrapPresenter;
 
     List<Comment> commentList;
+    VerticalLayout commentLayout = new VerticalLayout();
+    CommentPanel commentPanel;
 
     public SeparateEditView(BugrapPresenter bugrapPresenter){
         this.bugrapPresenter = bugrapPresenter;
@@ -128,11 +130,25 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         description.setWidthFull();
         add(level2, descLayout);
 
-        VerticalLayout commentLayout = new VerticalLayout();
         commentList = bugrapPresenter.requestCommentsByReport(report);
         commentList.forEach(comment -> commentLayout.add(getCommentLayout(comment)));
 
-        add(commentLayout);
+        commentPanel = new CommentPanel(report);
+        commentPanel.addListener(CommentPanel.SaveEvent.class, this::saveComment);
+
+        add(getContent());
+    }
+
+    public void saveComment(CommentPanel.SaveEvent event){
+        bugrapPresenter.saveComment(event.getComment());
+    }
+
+    private Component getContent() {
+        VerticalLayout content = new VerticalLayout(commentLayout,commentPanel);
+        content.setFlexGrow(4,commentLayout);
+        content.setFlexGrow(1,commentPanel);
+        content.setSizeFull();
+        return content;
     }
 
     private Component getCommentLayout(Comment comment){
