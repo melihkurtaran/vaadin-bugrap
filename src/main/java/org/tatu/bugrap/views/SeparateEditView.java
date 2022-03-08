@@ -16,6 +16,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.vaadin.bugrap.domain.entities.Comment;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
@@ -52,6 +54,9 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     List<Comment> commentList;
     VerticalLayout commentLayout = new VerticalLayout();
     CommentPanel commentPanel;
+
+    private UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    private String username = userDetails.getUsername();
 
     public SeparateEditView(BugrapPresenter bugrapPresenter){
         this.bugrapPresenter = bugrapPresenter;
@@ -140,7 +145,15 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     }
 
     public void saveComment(CommentPanel.SaveEvent event){
+
+        if (bugrapPresenter.getUser(username) == null)
+            bugrapPresenter.createUser(username,username + " @gmail.com","",false);
+
+        Comment c = event.getComment();
+
+        c.setAuthor(bugrapPresenter.getUser(username));
         bugrapPresenter.saveComment(event.getComment());
+        commentLayout.add(getCommentLayout(c));
     }
 
     private Component getContent() {

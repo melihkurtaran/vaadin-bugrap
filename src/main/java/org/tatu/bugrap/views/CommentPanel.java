@@ -10,6 +10,8 @@ import com.vaadin.flow.component.richtexteditor.RichTextEditor;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.vaadin.bugrap.domain.entities.Comment;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
@@ -26,6 +28,7 @@ public class CommentPanel extends VerticalLayout {
     private Report report;
 
     public CommentPanel(Report report){
+
         this.report = report;
         commentBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         cancelBtn.addThemeVariants(ButtonVariant.MATERIAL_CONTAINED);
@@ -44,8 +47,8 @@ public class CommentPanel extends VerticalLayout {
         Comment comment = new Comment();
         comment.setComment(commentArea.getValue());
         comment.setTimestamp(new Date());
-        comment.setAuthor(new Reporter());
         comment.setReport(report);
+        comment.setType(Comment.Type.COMMENT);
         commentArea.clear();
         fireEvent(new CommentPanel.SaveEvent(this,comment));
     }

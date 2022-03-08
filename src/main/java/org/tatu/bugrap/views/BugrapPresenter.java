@@ -26,17 +26,19 @@ public class BugrapPresenter {
 	private ProjectVersionRepository projectVersionRepository;
 	private ReporterRepository reporterRepository;
 	private CommentRepository commentRepository;
+	private DBTools dbTools;
 	private BugrapView view;
 
 	public BugrapPresenter(ReportRepository reportRepository, ProjectRepository projectRepository,
 						   ProjectVersionRepository projectVersionRepository, ReporterRepository reporterRepository
-							, CommentRepository commentRepository) {
+							, CommentRepository commentRepository, DBTools dbTools) {
 
-		this.reportRepository = reportRepository;
+		this.reporterRepository = reporterRepository;
 		this.projectRepository = projectRepository;
 		this.projectVersionRepository = projectVersionRepository;
 		this.reportRepository = reportRepository;
 		this.commentRepository = commentRepository;
+		this.dbTools = dbTools;
 	}
 
 	//requesting reports without using projects
@@ -111,6 +113,34 @@ public class BugrapPresenter {
 	}
 
 	public void saveComment(Comment comment){
+		if(comment == null){
+			System.err.println("Comment is null.");
+			return;
+		}
 		commentRepository.save(comment);
+	}
+
+	public void createUser(String name, String email, String password, boolean admin) {
+
+		Reporter user = new Reporter();
+		user.setAdmin(admin);
+		user.setName(name);
+		user.setEmail(email);
+
+		try {
+			user.hashPassword(password);
+		} catch (Exception var7) {
+			throw new RuntimeException(var7);
+		}
+
+		reporterRepository.save(user);
+	}
+
+	public Reporter getUser(String username){
+		try{
+		return reporterRepository.getByNameOrEmail(username,username);
+		}catch (Exception e){
+			return null;
+		}
 	}
 }

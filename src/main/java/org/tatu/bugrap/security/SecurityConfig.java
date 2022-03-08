@@ -1,6 +1,7 @@
 package org.tatu.bugrap.security;
 
 import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,12 +13,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.tatu.bugrap.views.LoginView;
 import org.vaadin.bugrap.domain.PasswordHash;
-import org.vaadin.bugrap.domain.entities.Reporter;
-import org.vaadin.bugrap.domain.spring.ReporterRepository;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.List;
+
 
 @EnableWebSecurity
 @Configuration
@@ -41,6 +40,7 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
 
 
         UserDetails user = null, user2 = null, user3 = null;
+
         try {
             user = User.withUsername("user")
                     .password(PasswordHash.createHash("123456"))

@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
+import org.tatu.bugrap.views.BugrapPresenter;
 import org.vaadin.bugrap.domain.spring.DBTools;
 
 /**
@@ -37,6 +38,7 @@ public class Application extends SpringBootServletInitializer implements AppShel
 	protected void onInit() {
 		dbTools.clear();
 		dbTools.create();
+
 	}
 
 	public static void main(String[] args) {
