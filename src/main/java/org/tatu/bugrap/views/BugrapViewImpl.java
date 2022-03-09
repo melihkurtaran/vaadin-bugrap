@@ -16,7 +16,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.router.PageTitle;
-import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
 import org.tatu.bugrap.security.SecurityService;
 import org.vaadin.bugrap.domain.entities.Project;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
@@ -33,9 +32,9 @@ import com.vaadin.flow.router.Route;
 
 import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @PageTitle("Bugrap Home")
 @Route(value = "")
@@ -59,6 +58,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private ReportForm formSingle;
 	private ReportFormMultiple formMultiple;
 	private MenuBar StatusBar = new MenuBar();
+	private Button statusOpen = new Button("Open");
 	private List<String> selectedStatuses = new ArrayList<>();
 	private SecurityService securityService;
 
@@ -173,12 +173,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			else
 				selectedStatuses.remove(event.getSource().getText());
 
-			if(selectedProject == null)
-				Notification.show("Please choose project first!");
-			else if(selectedVersion == null)
-				Notification.show("Please choose version first!");
-			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject, query));
-
+			refreshGridByStatus();
 		};
 
 		for (Report.Status status : Report.Status.values()) {
@@ -186,9 +181,32 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			item.setCheckable(true);
 			item.setChecked(true);
 			item.addClickListener(listener);
-			selectedStatuses.add(status.toString());
 		}
 
+
+		// Open Button for Status
+		statusOpen.getStyle().set("color","#4B5BD6");
+		AtomicInteger counter = new AtomicInteger();
+		statusOpen.addClickListener(buttonClickEvent -> {
+			counter.addAndGet(1);
+			if(counter.get() % 2 != 0) {
+				statusOpen.getStyle().set("background-color","#4B5BD6");
+				statusOpen.getStyle().set("color","white");
+				selectedStatuses.clear();
+				for (MenuItem item : options.getSubMenu().getItems()) {
+					item.setChecked(false);
+				}
+				selectedStatuses.add("Open");
+				options.getSubMenu().getItems().get(0).setChecked(true);
+			}else{
+				statusOpen.getStyle().set("background-color","white");
+				statusOpen.getStyle().set("color","#4B5BD6");
+				statusOpen.addThemeVariants(ButtonVariant.MATERIAL_CONTAINED);
+				options.getSubMenu().getItems().get(0).setChecked(false);
+				selectedStatuses.remove("Open");
+			}
+			refreshGridByStatus();
+		});
 
 
 		EditorForSingleReport();
@@ -202,7 +220,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		filter.getStyle().set("margin-left","auto");
 		add(horizontalLayout);
 		add(new HorizontalLayout(new Paragraph("Reports for"),versionSelection));
-		add(StatusBar);
+		add(new HorizontalLayout(statusOpen,StatusBar));
 		add(getContent());
 		this.setFlexGrow(1, grid);
 
@@ -274,6 +292,16 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		presenter.saveReport(event.getReport());
 		updateList();
 		closeSingleEditor();
+	}
+
+	public void refreshGridByStatus(){
+		if(selectedProject == null)
+			Notification.show("Please choose a project first!");
+		else if(selectedVersion == null)
+			Notification.show("Please choose a version first!");
+		else
+			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject, query));
+
 	}
 
 	public static Report getSelectedReport() {
