@@ -1,1 +1,25 @@
 @import url('line-awesome/dist/line-awesome/css/line-awesome.min.css');
+
+html {
+    --lumo-border-radius: 2px;
+
+
+    --lumo-primary-color: #4B5BD6;
+    --lumo-primary-text-color: #414FBC;
+
+    --lumo--secondary-color: #0A8BAE;
+    --lumo-secondary-text-color: #097492;
+
+    --lumo--tertiary-color: #DF9135;
+    --lumo-tertiary-text-color: #BC8341;
+
+
+    --lumo-box-shadow-xs: 0 1px 4px -1px;
+    --lumo-box-shadow-m: 0 2px 6px -1px;
+    --lumo-box-shadow-l: 0 3px 18px -2px;
+    --lumo-box-shadow-xl: 0 4px 24px -3px;
+}
+
+.button-selected {
+    background-color : #4B5BD6;
+}

@@ -1,9 +1,6 @@
 package org.tatu.bugrap.views;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -11,11 +8,15 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.tatu.bugrap.security.SecurityService;
 import org.vaadin.bugrap.domain.entities.Project;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
@@ -26,9 +27,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.AfterNavigationObserver;
-import com.vaadin.flow.router.Route;
 
 import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
@@ -61,6 +59,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private Button statusOpen = new Button("Open");
 	private List<String> selectedStatuses = new ArrayList<>();
 	private SecurityService securityService;
+	private UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 	private static Report selectedReport;
 
@@ -69,7 +68,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		this.presenter = presenter;
 		this.securityService = securityService;
 		presenter.setView(this);
-		versions = new ArrayList<ProjectVersion>();
+		versions = new ArrayList<>();
 
 		setSizeFull();
 		grid = new Grid<>(Report.class);
@@ -133,18 +132,32 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			dataView.refreshAll();
 		});
 
-		Button logOutBtn = new Button("Log out", e -> securityService.logout());
-		logOutBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
-		HorizontalLayout level1 = new HorizontalLayout(projectSelection,logOutBtn);
+		RouterLink username = new RouterLink(userDetails.getUsername(),BugrapViewImpl.class);
+
+		Icon logOutIcon = new Icon(VaadinIcon.POWER_OFF);
+		logOutIcon.addClickListener(e -> securityService.logout());
+		logOutIcon.addClickShortcut(Key.ESCAPE);
+		Icon userIcon = new Icon("lumo", "user");
+
+		userIcon.setColor("#414FBC");
+		logOutIcon.setColor("#414FBC");
+
+		HorizontalLayout userLayout = new HorizontalLayout(userIcon,username, logOutIcon);
+		username.getStyle().set("margin-right","10px");
+		userLayout.setSpacing(false);
+		HorizontalLayout level1 = new HorizontalLayout(projectSelection,userLayout);
 		level1.setWidthFull();
-		logOutBtn.getStyle().set("margin-left","auto");
+		level1.setAlignItems(Alignment.END);
+		level1.setAlignSelf(Alignment.CENTER,userLayout);
+		projectSelection.getStyle().set("margin-right","auto");
 
 		add(level1);
 
 		//buttons
-		buttonReportBug = new Button("Report a bug");
-		buttonReqFeature = new Button("Request a feature");
-		buttonMngProject = new Button("Manage Project");
+		buttonReportBug = new Button(" Report a bug",new Icon(VaadinIcon.BUG));
+		buttonReqFeature = new Button("Request a feature",new Icon(VaadinIcon.LIGHTBULB));
+		buttonMngProject = new Button("Manage Project",new Icon(VaadinIcon.COG));
+
 
 		filter = new TextField("");
 		filter.setPlaceholder("Search..");
@@ -190,7 +203,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		statusOpen.addClickListener(buttonClickEvent -> {
 			counter.addAndGet(1);
 			if(counter.get() % 2 != 0) {
-				statusOpen.getStyle().set("background-color","#4B5BD6");
+				statusOpen.addClassName("button-selected");
 				statusOpen.getStyle().set("color","white");
 				selectedStatuses.clear();
 				for (MenuItem item : options.getSubMenu().getItems()) {
@@ -199,9 +212,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				selectedStatuses.add("Open");
 				options.getSubMenu().getItems().get(0).setChecked(true);
 			}else{
-				statusOpen.getStyle().set("background-color","white");
-				statusOpen.getStyle().set("color","#4B5BD6");
-				statusOpen.addThemeVariants(ButtonVariant.MATERIAL_CONTAINED);
+				statusOpen.removeClassName("button-selected");
+				statusOpen.getStyle().set("color","#414FBC");
 				options.getSubMenu().getItems().get(0).setChecked(false);
 				selectedStatuses.remove("Open");
 			}
