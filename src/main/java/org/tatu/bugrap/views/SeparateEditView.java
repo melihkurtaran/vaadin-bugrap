@@ -1,6 +1,7 @@
 package org.tatu.bugrap.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -9,7 +10,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -168,7 +171,8 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         HorizontalLayout comLayout = new HorizontalLayout();
         comLayout.setWidthFull();
         comLayout.getStyle().set("border","1px solid gray").set("border-radius","3px");
-        Paragraph commentDetail = new Paragraph(comment.getComment());
+        Label commentDetail = new Label();
+        commentDetail.add(new Html("<span>" + comment.getComment() + "</span>"));
         commentDetail.getStyle().set("padding","10px");
         comLayout.add(commentDetail);
 
