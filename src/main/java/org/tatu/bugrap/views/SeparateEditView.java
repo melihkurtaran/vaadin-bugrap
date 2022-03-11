@@ -13,6 +13,8 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -51,7 +53,7 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     ComboBox<ProjectVersion> version = new ComboBox<>("Version");
     ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
     Button save = new Button("Save Changes");
-    Button revert = new Button("Revert");
+    Button revert = new Button("Revert", new Icon(VaadinIcon.ROTATE_LEFT));
     BugrapPresenter bugrapPresenter;
 
     List<Comment> commentList;
@@ -63,6 +65,7 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
 
     public SeparateEditView(BugrapPresenter bugrapPresenter){
         this.bugrapPresenter = bugrapPresenter;
+        this.getStyle().set("background-color","white");
 
         priority.setItems(Report.Priority.values());
         status.setItems(Report.Status.values());

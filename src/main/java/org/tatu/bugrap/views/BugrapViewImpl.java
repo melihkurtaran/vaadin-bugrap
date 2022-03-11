@@ -70,6 +70,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		presenter.setView(this);
 		versions = new ArrayList<>();
 
+		this.getStyle().set("background-color","white");
+
 		setSizeFull();
 		grid = new Grid<>(Report.class);
 		grid.getDataCommunicator().setPagingEnabled(true);
