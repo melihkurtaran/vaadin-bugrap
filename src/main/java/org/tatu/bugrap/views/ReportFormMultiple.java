@@ -19,6 +19,7 @@ import org.vaadin.bugrap.domain.entities.Reporter;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ReportFormMultiple extends VerticalLayout
 {
@@ -56,6 +57,7 @@ public class ReportFormMultiple extends VerticalLayout
                 version,
                 buttons
         );
+
         layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         layout.setWidthFull();
         buttons.getElement().getStyle().set("margin-left", "auto");
@@ -78,5 +80,30 @@ public class ReportFormMultiple extends VerticalLayout
 
     public void setReports(Set<Report> allSelectedReports) {
         reports = allSelectedReports;
+
+        Boolean prio_same = true, type_same = true, stat_same = true, assig_same = true, vers_same = true;
+
+        //if all selected reports has the same value then show it
+        Report selectedReport = reports.stream().collect(Collectors.toUnmodifiableList()).get(0);
+        for (Report r : reports)
+        {
+            if(prio_same && (selectedReport.getPriority()!=null) && !selectedReport.getPriority().equals(r.getPriority()))
+            { prio_same = false; priority.clear();}
+            if(type_same && (selectedReport.getType()!=null) && !selectedReport.getType().equals(r.getType()))
+            { type_same = false; type.clear();}
+            if(stat_same && (selectedReport.getStatus()!=null) && !selectedReport.getStatus().equals(r.getStatus()))
+            { stat_same = false; status.clear();}
+            if(assig_same && (selectedReport.getAssigned()!=null) && !selectedReport.getAssigned().equals(r.getAssigned()))
+            { assig_same = false; assigned.clear();}
+            if(vers_same && (selectedReport.getVersion()!=null) && !selectedReport.getVersion().equals(r.getVersion()))
+            { vers_same = false; version.clear();}
+        }
+        if (prio_same && (selectedReport.getPriority()!=null)) { priority.setValue(selectedReport.getPriority()); }
+        if (type_same && (selectedReport.getType()!=null)) { type.setValue(selectedReport.getType()); }
+        if (stat_same && (selectedReport.getStatus()!=null)) { status.setValue(selectedReport.getStatus()); }
+        if (assig_same && (selectedReport.getAssigned()!=null)) { assigned.setValue(selectedReport.getAssigned()); }
+        if (vers_same && (selectedReport.getVersion()!=null)) { version.setValue(selectedReport.getVersion()); }
+
+
     }
 }
