@@ -5,6 +5,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -33,7 +35,7 @@ public class ReportForm extends VerticalLayout {
     private ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
 
     private Button save = new Button("Save Changes");
-    private Button revert = new Button("Revert");
+    private Button revert = new Button("Revert", new Icon(VaadinIcon.ROTATE_LEFT));
     private Report report;
 
 
@@ -55,6 +57,10 @@ public class ReportForm extends VerticalLayout {
             UI.getCurrent().navigate(SeparateEditView.class);
         });
 
+        assigned.setPlaceholder("Not Assigned");
+        version.setPlaceholder("No Version");
+
+
         HorizontalLayout buttons = new HorizontalLayout(createButtonLayout());
 
         HorizontalLayout layout = new HorizontalLayout(summary,openBtn);
@@ -69,7 +75,7 @@ public class ReportForm extends VerticalLayout {
         layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         layout2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         description.setWidth("50%");
-        description.setMaxHeight("50%");
+        description.setMaxHeight("40%");
 
 
 

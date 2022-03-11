@@ -86,8 +86,8 @@ public class BugrapPresenter {
 		return commentRepository.findAllByReport(report);
 	}
 
-	public Stream<Reporter> requestReporters() {
-		return reporterRepository.findAll().stream();
+	public List<Reporter> requestReporters() {
+		return reporterRepository.findAll();
 	}
 
 	public List<Report> requestReportsByProject(Project p) {
@@ -95,6 +95,8 @@ public class BugrapPresenter {
 	}
 
 	public List<ProjectVersion> requestProjectVersionsByProject(Project p) {
+		if (p == null)
+			p = BugrapViewImpl.getSelectedReport().getProject();
 		return projectVersionRepository.findAllByProject(p);
 	}
 

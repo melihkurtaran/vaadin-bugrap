@@ -6,6 +6,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -33,7 +35,7 @@ public class ReportFormMultiple extends VerticalLayout
     ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
 
     Button save = new Button("Save Changes");
-    Button revert = new Button("Revert");
+    Button revert = new Button("Revert", new Icon(VaadinIcon.ROTATE_LEFT));
 
     public ReportFormMultiple(List<Reporter> reporters, List<ProjectVersion> versions) {
         binder.bindInstanceFields(this);

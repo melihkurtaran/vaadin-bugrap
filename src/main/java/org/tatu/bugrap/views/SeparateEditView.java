@@ -67,15 +67,16 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         this.bugrapPresenter = bugrapPresenter;
         this.getStyle().set("background-color","white");
 
+        report = BugrapViewImpl.getSelectedReport();
+
         priority.setItems(Report.Priority.values());
         status.setItems(Report.Status.values());
         type.setItems(Report.Type.values());
-        assigned.setItems(Collections.EMPTY_LIST);
+        assigned.setItems(bugrapPresenter.requestReporters());
         assigned.setItemLabelGenerator(Reporter::getName);
-        version.setItems(Collections.EMPTY_LIST);
+        version.setItems(bugrapPresenter.requestProjectVersionsByProject(report.getProject()));
         version.setItemLabelGenerator(ProjectVersion::getVersion);
 
-        report = BugrapViewImpl.getSelectedReport();
         binder.readBean(report);
 
         if(report != null) {
@@ -151,9 +152,6 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     }
 
     public void saveComment(CommentPanel.SaveEvent event){
-
-        if (bugrapPresenter.getUser(username) == null)
-            bugrapPresenter.createUser(username,username + " @gmail.com","",false);
 
         Comment c = event.getComment();
 

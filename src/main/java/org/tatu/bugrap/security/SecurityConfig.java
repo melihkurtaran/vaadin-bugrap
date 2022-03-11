@@ -13,19 +13,30 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.tatu.bugrap.views.LoginView;
 import org.vaadin.bugrap.domain.PasswordHash;
+import org.vaadin.bugrap.domain.entities.Reporter;
+import org.vaadin.bugrap.domain.spring.ReporterRepository;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
 
+    private ReporterRepository reporterRepository;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         super.configure(http);
         setLoginView(http, LoginView.class);
+    }
+
+    @Autowired
+    public SecurityConfig(ReporterRepository reporterRepository) {
+        this.reporterRepository = reporterRepository;
     }
 
     @Override
@@ -38,6 +49,19 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
     @Override
     protected UserDetailsService userDetailsService(){
 
+        List<Reporter> reporters = reporterRepository.findAll();
+        List<UserDetails> users = new ArrayList<>();
+
+        for(Reporter reporter : reporters)
+        {
+           UserDetails user = null;
+           try {
+            user = User.withUsername(reporter.getName()).password(reporter.getPassword()).roles("USER").build();
+            }catch (Exception e) {
+               e.printStackTrace();
+           }
+           users.add(user);
+        }
 
         UserDetails user = null, user2 = null, user3 = null;
 
@@ -54,12 +78,15 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
                     .password(PasswordHash.createHash("1"))
                     .roles("USER")
                     .build();
+            users.add(user);
+            users.add(user2);
+            users.add(user3);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeySpecException e) {
             e.printStackTrace();
         }
 
-        return new InMemoryUserDetailsManager(user,user2,user3);
+        return new InMemoryUserDetailsManager(users);
     }
 }

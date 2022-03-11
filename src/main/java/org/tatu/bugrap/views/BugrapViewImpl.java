@@ -2,7 +2,6 @@ package org.tatu.bugrap.views;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
@@ -27,12 +26,15 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import org.vaadin.bugrap.domain.entities.Reporter;
 
 import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @PageTitle("Bugrap Home")
 @Route(value = "")
@@ -50,6 +52,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private Project selectedProject;
 	private ProjectVersion selectedVersion;
 	private List<ProjectVersion> versions;
+	private List<Reporter> reporters;
 	private Button buttonReportBug;
 	private Button buttonReqFeature;
 	private Button buttonMngProject;
@@ -67,6 +70,14 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	public BugrapViewImpl(BugrapPresenter presenter, SecurityService securityService) {
 		this.presenter = presenter;
 		this.securityService = securityService;
+
+		selectedProject = presenter.requestProjects().collect(Collectors.toList()).get(0); //default selected project is the first one
+
+		// If the user is not in repository then add it
+		if (presenter.getUser(userDetails.getUsername()) == null)
+			presenter.createUser(userDetails.getUsername(),userDetails.getUsername() + " @gmail.com","",false);
+		reporters = presenter.requestReporters();
+
 		presenter.setView(this);
 		versions = new ArrayList<>();
 
@@ -93,6 +104,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		order.add(new GridSortOrder<Report>(grid.getColumns().get(0), SortDirection.DESCENDING));
 		grid.setColumnReorderingAllowed(true);
 		grid.sort(order);
+
+
 
 		grid.addSelectionListener(selectionEvent -> {
 			if(selectionEvent.getAllSelectedItems().size()==1) {
@@ -280,18 +293,19 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	{
 		//this will create a split panel to edit a report
 
-		formSingle = new ReportForm(Collections.EMPTY_LIST, versions);
+		formSingle = new ReportForm(reporters, presenter.requestProjectVersionsByProject(selectedProject));
 		formSingle.setWidthFull();
 		formSingle.setMaxHeight("50%");
 
 		formSingle.addListener(ReportForm.SaveEvent.class, this::saveReport);
 		formSingle.addListener(ReportForm.CloseEvent.class, closeEvent -> closeSingleEditor());
+
 	}
 
 	public void EditorMultipleReport()
 	{
 		//this will create a split panel to edit multiple report
-		formMultiple = new ReportFormMultiple(Collections.EMPTY_LIST, versions);
+		formMultiple = new ReportFormMultiple(reporters, presenter.requestProjectVersionsByProject(selectedProject));
 		formSingle.setWidthFull();
 	}
 
