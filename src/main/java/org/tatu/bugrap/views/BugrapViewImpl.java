@@ -6,6 +6,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.GridSortOrder;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -30,10 +31,7 @@ import org.vaadin.bugrap.domain.entities.Reporter;
 
 import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @PageTitle("Bugrap Home")
@@ -60,6 +58,9 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private ReportFormMultiple formMultiple;
 	private MenuBar StatusBar = new MenuBar();
 	private Button statusOpen = new Button("Open");
+	private Button statusAll = new Button("All kinds");
+	private boolean openStatusSelected = false;
+	private boolean allStatusSelected = false;
 	private List<String> selectedStatuses = new ArrayList<>();
 	private SecurityService securityService;
 	private UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -214,10 +215,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		// Open Button for Status
 		statusOpen.getStyle().set("color","#4B5BD6");
-		AtomicInteger counter = new AtomicInteger();
 		statusOpen.addClickListener(buttonClickEvent -> {
-			counter.addAndGet(1);
-			if(counter.get() % 2 != 0) {
+			if(!openStatusSelected) {
 				statusOpen.addClassName("button-selected");
 				statusOpen.getStyle().set("color","white");
 				selectedStatuses.clear();
@@ -225,12 +224,48 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 					item.setChecked(false);
 				}
 				selectedStatuses.add("Open");
+				if(allStatusSelected) {
+					statusAll.removeClassName("button-selected");
+					statusAll.getStyle().set("color","#414FBC");
+					allStatusSelected = false;
+				}
 				options.getSubMenu().getItems().get(0).setChecked(true);
+				openStatusSelected = true;
 			}else{
 				statusOpen.removeClassName("button-selected");
 				statusOpen.getStyle().set("color","#414FBC");
 				options.getSubMenu().getItems().get(0).setChecked(false);
 				selectedStatuses.remove("Open");
+				openStatusSelected = false;
+			}
+			refreshGridByStatus();
+		});
+		// All kinds Button for Status
+		statusAll.setWidthFull();
+		statusAll.getStyle().set("color","#4B5BD6");
+		statusAll.addClickListener(buttonClickEvent -> {
+			if(!allStatusSelected) {
+				statusAll.addClassName("button-selected");
+				statusAll.getStyle().set("color","white");
+				selectedStatuses.clear();
+				for (MenuItem item : options.getSubMenu().getItems()) {
+					selectedStatuses.add(item.getText());
+					item.setChecked(true);
+				}
+				allStatusSelected = true;
+				if(openStatusSelected) {
+					statusOpen.removeClassName("button-selected");
+					statusOpen.getStyle().set("color","#414FBC");
+					openStatusSelected = false;
+				}
+			}else{
+				statusAll.removeClassName("button-selected");
+				statusAll.getStyle().set("color","#414FBC");
+				selectedStatuses.clear();
+				for (MenuItem item : options.getSubMenu().getItems()) {
+					item.setChecked(false);
+				}
+				allStatusSelected = false;
 			}
 			refreshGridByStatus();
 		});
@@ -247,7 +282,15 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		filter.getStyle().set("margin-left","auto");
 		add(horizontalLayout);
 		add(new HorizontalLayout(new Paragraph("Reports for"),versionSelection));
-		add(new HorizontalLayout(statusOpen,StatusBar));
+
+		HorizontalLayout statusBtnLayout = new HorizontalLayout(statusOpen,statusAll,StatusBar);
+		statusBtnLayout.setSpacing(false);
+		statusBtnLayout.setAlignItems(Alignment.BASELINE);
+		HorizontalLayout statusLayout = new HorizontalLayout(new Label("Status"),statusBtnLayout);
+		statusLayout.setAlignItems(Alignment.BASELINE);
+		add(statusLayout);
+
+
 		add(getContent());
 		this.setFlexGrow(1, grid);
 
