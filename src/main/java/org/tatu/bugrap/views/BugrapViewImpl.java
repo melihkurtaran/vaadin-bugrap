@@ -56,11 +56,16 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private Button buttonMngProject;
 	private ReportForm formSingle;
 	private ReportFormMultiple formMultiple;
+	private Button btnAsgnMe = new Button("Only Me");
+	private Button btnAsgnEveryone = new Button("Everyone");
 	private MenuBar StatusBar = new MenuBar();
 	private Button statusOpen = new Button("Open");
 	private Button statusAll = new Button("All kinds");
 	private boolean openStatusSelected = false;
-	private boolean allStatusSelected = false;
+	private boolean allStatusSelected = true;
+	private boolean assignMeSelected = false;
+	private boolean assignEveryoneSelected = true;
+	private Reporter assignee = null;
 	private List<String> selectedStatuses = new ArrayList<>();
 	private SecurityService securityService;
 	private UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -71,8 +76,6 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	public BugrapViewImpl(BugrapPresenter presenter, SecurityService securityService) {
 		this.presenter = presenter;
 		this.securityService = securityService;
-
-		selectedProject = presenter.requestProjects().collect(Collectors.toList()).get(0); //default selected project is the first one
 
 		// If the user is not in repository then add it
 		if (presenter.getUser(userDetails.getUsername()) == null)
@@ -129,6 +132,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			}
 		}) ;
 
+		selectedProject = presenter.requestProjects().collect(Collectors.toList()).get(0); //default selected project is the first one
+
 		//version Selection for the grid
 		versionSelection = new ComboBox<>("");
 
@@ -144,7 +149,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			versions.addAll(presenter.requestProjectVersionsByProject(selectedProject));
 			versionSelection.setItems(versions);
 			versionSelection.setValue(v); //to start as all versions selected
-			grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,query));
+			grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee,query));
 			dataView.refreshAll();
 		});
 
@@ -188,8 +193,42 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		// filter reports by version
 		versionSelection.addValueChangeListener(version -> {
 			selectedVersion = version.getValue();
-			grid.setItems(query -> presenter.requestReports(selectedStatuses,version.getValue(),selectedProject, query));
+			grid.setItems(query -> presenter.requestReports(selectedStatuses,version.getValue(),selectedProject,assignee, query));
 		});
+
+		// Only Me Button for Assignees
+		btnAsgnMe.getStyle().set("color","#4B5BD6");
+		btnAsgnMe.addClickListener(buttonClickEvent -> {
+			if(assignEveryoneSelected) {
+				btnAsgnMe.addClassName("button-selected");
+				btnAsgnMe.getStyle().set("color","white");
+				assignee = presenter.getUser(userDetails.getUsername());
+				if(assignEveryoneSelected) {
+					buttonDeselect(btnAsgnEveryone);
+					assignEveryoneSelected = false;
+				}
+				assignMeSelected = true;
+			}
+			refreshGridByButton();
+		});
+
+		// Everyone Button for Assignees
+		btnAsgnEveryone.addClassName("button-selected");
+		btnAsgnEveryone.getStyle().set("color","white");
+		btnAsgnEveryone.addClickListener(buttonClickEvent -> {
+			if(assignMeSelected) {
+				btnAsgnEveryone.addClassName("button-selected");
+				btnAsgnEveryone.getStyle().set("color","white");
+				assignee = null;
+				if(assignMeSelected) {
+					buttonDeselect(btnAsgnMe);
+					assignMeSelected = false;
+				}
+				assignEveryoneSelected = true;
+			}
+			refreshGridByButton();
+		});
+
 
 		//Status Bar
 		MenuItem options = StatusBar.addItem("Custom...");
@@ -202,7 +241,14 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			else
 				selectedStatuses.remove(event.getSource().getText());
 
-			refreshGridByStatus();
+			//deselect all other status buttons
+			buttonDeselect(statusAll);
+			buttonDeselect(statusOpen);
+			allStatusSelected = false;
+			openStatusSelected = false;
+
+
+			refreshGridByButton();
 		};
 
 		for (Report.Status status : Report.Status.values()) {
@@ -225,24 +271,23 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				}
 				selectedStatuses.add("Open");
 				if(allStatusSelected) {
-					statusAll.removeClassName("button-selected");
-					statusAll.getStyle().set("color","#414FBC");
+					buttonDeselect(statusAll);
 					allStatusSelected = false;
 				}
 				options.getSubMenu().getItems().get(0).setChecked(true);
 				openStatusSelected = true;
 			}else{
-				statusOpen.removeClassName("button-selected");
-				statusOpen.getStyle().set("color","#414FBC");
+				buttonDeselect(statusOpen);
 				options.getSubMenu().getItems().get(0).setChecked(false);
 				selectedStatuses.remove("Open");
 				openStatusSelected = false;
 			}
-			refreshGridByStatus();
+			refreshGridByButton();
 		});
 		// All kinds Button for Status
 		statusAll.setWidthFull();
-		statusAll.getStyle().set("color","#4B5BD6");
+		statusAll.addClassName("button-selected");
+		statusAll.getStyle().set("color","white");
 		statusAll.addClickListener(buttonClickEvent -> {
 			if(!allStatusSelected) {
 				statusAll.addClassName("button-selected");
@@ -254,20 +299,18 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				}
 				allStatusSelected = true;
 				if(openStatusSelected) {
-					statusOpen.removeClassName("button-selected");
-					statusOpen.getStyle().set("color","#414FBC");
+					buttonDeselect(statusOpen);
 					openStatusSelected = false;
 				}
 			}else{
-				statusAll.removeClassName("button-selected");
-				statusAll.getStyle().set("color","#414FBC");
+				buttonDeselect(statusAll);
 				selectedStatuses.clear();
 				for (MenuItem item : options.getSubMenu().getItems()) {
 					item.setChecked(false);
 				}
 				allStatusSelected = false;
 			}
-			refreshGridByStatus();
+			refreshGridByButton();
 		});
 
 
@@ -283,12 +326,18 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		add(horizontalLayout);
 		add(new HorizontalLayout(new Paragraph("Reports for"),versionSelection));
 
+		HorizontalLayout assgnBtnLayout = new HorizontalLayout(btnAsgnMe,btnAsgnEveryone);
+		assgnBtnLayout.setSpacing(false);
+		assgnBtnLayout.getStyle().set("margin-right","50px");
+		HorizontalLayout assigneeLayout = new HorizontalLayout(new Label("Assignees"),assgnBtnLayout);
+		assigneeLayout.setAlignItems(Alignment.BASELINE);
+
 		HorizontalLayout statusBtnLayout = new HorizontalLayout(statusOpen,statusAll,StatusBar);
 		statusBtnLayout.setSpacing(false);
 		statusBtnLayout.setAlignItems(Alignment.BASELINE);
 		HorizontalLayout statusLayout = new HorizontalLayout(new Label("Status"),statusBtnLayout);
 		statusLayout.setAlignItems(Alignment.BASELINE);
-		add(statusLayout);
+		add(new HorizontalLayout(assigneeLayout,statusLayout));
 
 
 		add(getContent());
@@ -354,7 +403,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 	public void updateList(){
 		if(projectSelection.getValue() != null)
-			grid.setItems(query ->presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,query));
+			grid.setItems(query ->presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee,query));
 		else
 			grid.setItems(query -> presenter.requestReports("", query));
 	}
@@ -371,8 +420,24 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		else if(selectedVersion == null)
 			Notification.show("Please choose a version first!");
 		else
-			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject, query));
+			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee, query));
 
+	}
+
+	public void refreshGridByButton(){
+		if(selectedProject == null)
+			Notification.show("Please choose a project first!");
+		else if(selectedVersion == null)
+			Notification.show("Please choose a version first!");
+		else
+			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee, query));
+
+	}
+
+	public void buttonDeselect(Button b)
+	{
+		b.removeClassName("button-selected");
+		b.getStyle().set("color","#414FBC");
 	}
 
 	public static Report getSelectedReport() {

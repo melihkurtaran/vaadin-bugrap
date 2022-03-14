@@ -52,7 +52,7 @@ public class BugrapPresenter {
 	}
 
 	//requesting reports with using its statuses, versions and the project
-	public Stream<Report> requestReports(List<String> statuses, ProjectVersion version,Project p, Query<Report, ?> query) {
+	public Stream<Report> requestReports(List<String> statuses, ProjectVersion version,Project p,Reporter assignee, Query<Report, ?> query) {
 
 		if (version == null) {
 			version = new ProjectVersion();
@@ -65,6 +65,7 @@ public class BugrapPresenter {
 			if( r.getProject() != null && p != null
 					&& ( finalVersion.getVersion().equals("All Versions") || (r.getVersion() != null && r.getVersion().getVersion().equals(finalVersion.getVersion())))
 					&& r.getProject().getName().equals(p.getName())
+					&& ((assignee == null) || (assignee.equals(r.getAssigned())))
 					&& ( r.getStatus() == null || statuses.contains(r.getStatus().toString()))){
 				return true;
 			}else
