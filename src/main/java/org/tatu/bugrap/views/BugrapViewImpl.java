@@ -86,6 +86,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		versions = new ArrayList<>();
 
 		this.getStyle().set("background-color","white");
+		this.getStyle().set("background-color","white");
 
 		setSizeFull();
 		grid = new Grid<>(Report.class);
@@ -118,6 +119,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				selectedReport = selectionEvent.getFirstSelectedItem().get();
 				formSingle.setSummary(selectedReport.getSummary());
 				formSingle.setDescription(selectedReport.getDescription());
+				formSingle.setAuthor(selectedReport.getAuthor());
+				formSingle.setTime(selectedReport.getReportedTimestamp());
 				formSingle.setReport(selectedReport);
 			}
 			else if(selectionEvent.getAllSelectedItems().size()==0) {

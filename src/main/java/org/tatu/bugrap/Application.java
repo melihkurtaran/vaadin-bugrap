@@ -2,6 +2,7 @@ package org.tatu.bugrap;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 
@@ -29,6 +30,7 @@ import org.vaadin.bugrap.domain.spring.DBTools;
 @PWA(name = "Bugrap", shortName = "Bugrap", offlineResources = { "images/logo.png" })
 @NpmPackage(value = "line-awesome", version = "1.3.0")
 @ComponentScan({"org.vaadin.bugrap.domain.spring","org.tatu.bugrap"})
+@Viewport("width=device-width, initial-scale=1")
 public class Application extends SpringBootServletInitializer implements AppShellConfigurator {
 
 	@Autowired

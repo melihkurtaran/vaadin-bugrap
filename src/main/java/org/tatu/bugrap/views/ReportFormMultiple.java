@@ -104,6 +104,5 @@ public class ReportFormMultiple extends VerticalLayout
         if (assig_same && (selectedReport.getAssigned()!=null)) { assigned.setValue(selectedReport.getAssigned()); }
         if (vers_same && (selectedReport.getVersion()!=null)) { version.setValue(selectedReport.getVersion()); }
 
-
     }
 }

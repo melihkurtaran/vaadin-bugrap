@@ -24,3 +24,8 @@ html {
 .button-selected {
     background-color : #4B5BD6;
 }
+
+.responsive-layout {
+    flex-wrap: wrap;
+    align-content: flex-start;
+}

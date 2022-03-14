@@ -1,12 +1,16 @@
 package org.tatu.bugrap.views;
 
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.avatar.AvatarVariant;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -18,7 +22,9 @@ import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
 
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 public class ReportForm extends VerticalLayout {
@@ -37,10 +43,11 @@ public class ReportForm extends VerticalLayout {
     private Button save = new Button("Save Changes");
     private Button revert = new Button("Revert", new Icon(VaadinIcon.ROTATE_LEFT));
     private Report report;
+    private Reporter author;
+    private Date date = new Date();
 
 
     public ReportForm(List<Reporter> reporters,List<ProjectVersion> versions) {
-
         binder.bindInstanceFields(this);
 
         priority.setItems(Report.Priority.values());
@@ -63,30 +70,54 @@ public class ReportForm extends VerticalLayout {
 
         HorizontalLayout buttons = new HorizontalLayout(createButtonLayout());
 
-        HorizontalLayout layout = new HorizontalLayout(summary,openBtn);
-        HorizontalLayout layout2 = new HorizontalLayout( priority,
-                type,
-                status,
-                assigned,
-                version,
-                buttons
-        );
+        FlexLayout flexLayout = new FlexLayout(priority, type, status,assigned, version, buttons);
+        for (int i=0;i<flexLayout.getComponentCount();i++)
+            flexLayout.getComponentAt(i).getElement().getStyle().set("margin","10px");
 
+        flexLayout.addClassName("responsive-layout");
+        flexLayout.getStyle().set("overflow","auto");
+        flexLayout.setAlignItems(Alignment.BASELINE);
+
+        HorizontalLayout layout = new HorizontalLayout(summary,openBtn);
         layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-        layout2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-        description.setWidth("50%");
-        description.setMaxHeight("40%");
+        description.setWidthFull();
+        description.setMaxLength(1500);
+
+        if(author == null)
+        {
+            author = new Reporter();
+            author.setName("unknown");
+        }
+
+        VerticalLayout reportInfo = new VerticalLayout();
+        reportInfo.setSizeFull();
+        reportInfo.setAlignItems(Alignment.END);
+
+        Avatar avatarAuthor = new Avatar(author.getName());
+
+        avatarAuthor.addThemeVariants(AvatarVariant.LUMO_XLARGE);
+        avatarAuthor.setColorIndex(ThreadLocalRandom.current().nextInt(1, 8));
+        VerticalLayout userInf = new VerticalLayout(new Paragraph(author.getName()),new Paragraph( new java.text.SimpleDateFormat("MM/dd/yyyy h:mm").format(date)));
+
+        userInf.setPadding(false);
+        reportInfo.add(new HorizontalLayout(avatarAuthor, userInf));
 
 
 
         openBtn.addClickShortcut(Key.ENTER,KeyModifier.CONTROL);
 
         openBtn.getElement().getStyle().set("margin-left", "auto");
-        buttons.getElement().getStyle().set("margin-left", "auto");
+        buttons.getElement().getStyle().clear().set("margin-left", "auto");
         layout.setWidthFull();
-        layout2.setWidthFull();
+        flexLayout.setWidthFull();
+        flexLayout.setHeightFull();
+
         this.setWidthFull();
-        add( layout, layout2, description);
+        HorizontalLayout descLayout = new HorizontalLayout(description,reportInfo);
+        descLayout.setWidthFull();
+        HorizontalLayout layout2 = new HorizontalLayout(flexLayout);
+        layout2.setWidthFull();
+        add( layout,layout2, descLayout);
 
     }
 
@@ -98,6 +129,15 @@ public class ReportForm extends VerticalLayout {
     {
         summary.removeAll();
         summary.add(s);
+    }
+
+    public void setTime(Date date)
+    {
+        this.date = date;
+    }
+
+    public void setAuthor(Reporter author){
+        this.author = author;
     }
 
     public void setDescription(String s)
@@ -131,6 +171,7 @@ public class ReportForm extends VerticalLayout {
         this.report = report;
         binder.readBean(report);
     }
+
 
     // Events
     public static abstract class ReportFormEvent extends ComponentEvent<ReportForm> {

@@ -137,6 +137,7 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         HorizontalLayout descLayout = new HorizontalLayout(description);
         descLayout.setWidth("50%");
         description.setWidthFull();
+        description.setMaxLength(1500);
         add(level2, descLayout);
 
         commentList = bugrapPresenter.requestCommentsByReport(report);
