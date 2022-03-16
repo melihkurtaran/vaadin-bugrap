@@ -220,6 +220,7 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     }
 
     private void validateAndSave() {
+        report.setTimestamp(new Date());
         binder.writeBeanIfValid(report);
         bugrapPresenter.saveReport(report);
     }

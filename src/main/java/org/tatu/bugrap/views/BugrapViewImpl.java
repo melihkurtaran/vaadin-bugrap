@@ -1,5 +1,6 @@
 package org.tatu.bugrap.views;
 
+import antlr.Version;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -31,6 +32,7 @@ import org.vaadin.bugrap.domain.entities.Reporter;
 
 import javax.annotation.security.PermitAll;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,10 +48,10 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private Span countLabel;
 	private int count;
 	private ComboBox<Project> projectSelection;
-	private ComboBox<ProjectVersion> versionSelection;
+	private ComboBox<ProjectVersion> versionSelection = new ComboBox<>("");
 	private Project selectedProject;
 	private ProjectVersion selectedVersion;
-	private List<ProjectVersion> versions;
+	private List<ProjectVersion> versions = new ArrayList<ProjectVersion>();
 	private List<Reporter> reporters;
 	private Button buttonReportBug;
 	private Button buttonReqFeature;
@@ -65,6 +67,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private boolean allStatusSelected = true;
 	private boolean assignMeSelected = false;
 	private boolean assignEveryoneSelected = true;
+	ProjectVersion allVersions = new ProjectVersion();
 	private Reporter assignee = null;
 	private List<String> selectedStatuses = new ArrayList<>();
 	private SecurityService securityService;
@@ -83,7 +86,6 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		reporters = presenter.requestReporters();
 
 		presenter.setView(this);
-		versions = new ArrayList<>();
 
 		this.getStyle().set("background-color","white");
 		this.getStyle().set("background-color","white");
@@ -91,25 +93,13 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		setSizeFull();
 		grid = new Grid<>(Report.class);
 		grid.getDataCommunicator().setPagingEnabled(true);
-		grid.setColumns("priority","type","summary","assigned","version");
-		grid.getColumnByKey( "assigned").setHeader("Assigned to");
+		initializeGrid();
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
 
 		grid.addItemDoubleClickListener(dblClick -> {
 			selectedReport = dblClick.getItem();
 			UI.getCurrent().navigate(SeparateEditView.class);
 		});
-
-
-		// this will be updated to support mins/hours/days ago
-		grid.addColumn(report -> new java.text.SimpleDateFormat("MM/dd/yyyy h:mm").format(report.getReportedTimestamp())).setHeader(("Reported"));
-
-		//Starts as ordered by priority column
-		List<GridSortOrder<Report>> order = new ArrayList<GridSortOrder<Report>>();
-		order.add(new GridSortOrder<Report>(grid.getColumns().get(0), SortDirection.DESCENDING));
-		grid.setColumnReorderingAllowed(true);
-		grid.sort(order);
-
 
 
 		grid.addSelectionListener(selectionEvent -> {
@@ -137,21 +127,18 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		selectedProject = presenter.requestProjects().collect(Collectors.toList()).get(0); //default selected project is the first one
 
-		//version Selection for the grid
-		versionSelection = new ComboBox<>("");
-
 		projectSelection = new ComboBox<>();
 		projectSelection.setWidth("50%");
 		projectSelection.setPlaceholder("Select a project");
 		projectSelection.addValueChangeListener(event -> {
 			selectedProject = event.getValue();
-			ProjectVersion v = new ProjectVersion();
 			versions.clear();
-			v.setVersion("All Versions");
-			versions.add(v);
+			allVersions.setVersion("All Versions");
+			allVersions.setProject(selectedProject);
+			versions.add(allVersions);
 			versions.addAll(presenter.requestProjectVersionsByProject(selectedProject));
 			versionSelection.setItems(versions);
-			versionSelection.setValue(v); //to start as all versions selected
+			versionSelection.setValue(allVersions); //to start as all versions selected
 			grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee,query));
 			dataView.refreshAll();
 		});
@@ -195,6 +182,15 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		// filter reports by version
 		versionSelection.addValueChangeListener(version -> {
+
+			if (version.getValue() != null && version.getValue().getVersion().equals("All Versions")) {
+				grid.removeAllColumns();
+				initializeGrid();
+			}
+			else if(version.getOldValue() != null && version.getOldValue().getVersion().equals("All Versions")){
+				grid.removeColumnByKey("version");
+				sortGrid();
+			}
 			selectedVersion = version.getValue();
 			grid.setItems(query -> presenter.requestReports(selectedStatuses,version.getValue(),selectedProject,assignee, query));
 		});
@@ -411,15 +407,19 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			grid.setItems(query ->presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee,query));
 		else
 			grid.setItems(query -> presenter.requestReports("", query));
+		sortGrid();
 	}
 
 	public void saveReport(ReportForm.SaveEvent event){
+		event.getReport().setTimestamp(new Date());
 		presenter.saveReport(event.getReport());
 		updateList();
 		closeSingleEditor();
 	}
 
 	public void saveReports(ReportFormMultiple.SaveEvent event){
+		for(Report r : event.getReports())
+			r.setTimestamp(new Date());
 		presenter.saveReports(event.getReports());
 		updateList();
 		closeMultipleEditor();
@@ -449,6 +449,24 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	{
 		b.removeClassName("button-selected");
 		b.getStyle().set("color","#414FBC");
+	}
+
+	public void initializeGrid()
+	{
+		grid.setColumns("version","priority","type","summary","assigned");
+		grid.getColumnByKey( "assigned").setHeader("Assigned to");
+		// these will be updated to support mins/hours/days ago
+		grid.addColumn(report -> new java.text.SimpleDateFormat("MM/dd/yyyy h:mm").format(report.getTimestamp())).setHeader(("Last Modified"));
+		grid.addColumn(report -> new java.text.SimpleDateFormat("MM/dd/yyyy h:mm").format(report.getReportedTimestamp())).setHeader(("Reported"));
+		sortGrid();
+	}
+
+	public void sortGrid(){
+		//Starts as ordered by priority column
+		List<GridSortOrder<Report>> order = new ArrayList<GridSortOrder<Report>>();
+		order.add(new GridSortOrder<Report>(grid.getColumnByKey("priority"), SortDirection.DESCENDING));
+		grid.setColumnReorderingAllowed(true);
+		grid.sort(order);
 	}
 
 	public static Report getSelectedReport() {
