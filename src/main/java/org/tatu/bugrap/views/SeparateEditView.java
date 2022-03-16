@@ -14,6 +14,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -28,6 +29,7 @@ import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
 
 import javax.annotation.security.PermitAll;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -37,25 +39,28 @@ import java.util.concurrent.ThreadLocalRandom;
 @PermitAll
 public class SeparateEditView extends VerticalLayout implements AfterNavigationObserver
 {
-    H3 projectName = new H3("");
-    H3 projectVersion = new H3("");
-    H3 summary = new H3("");
-    Report report;
-    Binder<Report> binder = new BeanValidationBinder<>(Report.class);
+    private H3 projectName = new H3("");
+    private H3 projectVersion = new H3("");
+    private H3 summary = new H3("");
+    private Report report;
+    private Reporter author;
+    private Date date = new Date();
 
-    TextArea description = new TextArea("");
-    ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
-    ComboBox<Report.Type> type = new ComboBox<>("Type");
-    ComboBox<Report.Status> status = new ComboBox<>("Status");
-    ComboBox<ProjectVersion> version = new ComboBox<>("Version");
-    ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
-    Button save = new Button("Save Changes");
-    Button revert = new Button("Revert", new Icon(VaadinIcon.ROTATE_LEFT));
-    BugrapPresenter bugrapPresenter;
+    private Binder<Report> binder = new BeanValidationBinder<>(Report.class);
 
-    List<Comment> commentList;
-    VerticalLayout commentLayout = new VerticalLayout();
-    CommentPanel commentPanel;
+    private TextArea description = new TextArea("");
+    private ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
+    private ComboBox<Report.Type> type = new ComboBox<>("Type");
+    private ComboBox<Report.Status> status = new ComboBox<>("Status");
+    private ComboBox<ProjectVersion> version = new ComboBox<>("Version");
+    private ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
+    private Button save = new Button("Save Changes");
+    private Button revert = new Button("Revert", new Icon(VaadinIcon.ROTATE_LEFT));
+    private BugrapPresenter bugrapPresenter;
+
+    private List<Comment> commentList;
+    private VerticalLayout commentLayout = new VerticalLayout();
+    private CommentPanel commentPanel;
 
     private UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     private String username = userDetails.getUsername();
@@ -63,18 +68,12 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
     public SeparateEditView(BugrapPresenter bugrapPresenter){
         this.bugrapPresenter = bugrapPresenter;
         this.getStyle().set("background-color","white");
-
         report = BugrapViewImpl.getSelectedReport();
-
         priority.setItems(Report.Priority.values());
         status.setItems(Report.Status.values());
         type.setItems(Report.Type.values());
         assigned.setItems(bugrapPresenter.requestReporters());
         assigned.setItemLabelGenerator(Reporter::getName);
-        version.setItems(bugrapPresenter.requestProjectVersionsByProject(report.getProject()));
-        version.setItemLabelGenerator(ProjectVersion::getVersion);
-
-        binder.readBean(report);
 
         if(report != null) {
             projectName.setText(report.getProject().getName());
@@ -83,6 +82,11 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
             priority.setValue(report.getPriority());
             status.setValue(report.getStatus());
             type.setValue(report.getType());
+            author = report.getAuthor();
+            date = report.getReportedTimestamp();
+
+            version.setItems(bugrapPresenter.requestProjectVersionsByProject(report.getProject()));
+            version.setItemLabelGenerator(ProjectVersion::getVersion);
 
             if (report.getAssigned() == null)
                 assigned.setPlaceholder("Not Assigned");
@@ -97,8 +101,9 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
                 version.setValue(report.getVersion());
                 projectVersion.setText(report.getVersion().toString());
             }
-        }
 
+        }
+        binder.readBean(report);
         binder.bindInstanceFields(this);
 
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -123,22 +128,44 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         projectVersion.getElement().getStyle().set("margin-left", "auto");
         add(level1);
         add(summary);
+
+
+        if(author == null)
+        {
+            author = new Reporter();
+            author.setName("unknown");
+        }
+        VerticalLayout reportInfo = new VerticalLayout();
+        reportInfo.setSizeFull();
+        reportInfo.setAlignItems(Alignment.END);
+        Avatar avatarAuthor = new Avatar(author.getName());
+
+        avatarAuthor.addThemeVariants(AvatarVariant.LUMO_XLARGE);
+        avatarAuthor.setColorIndex(ThreadLocalRandom.current().nextInt(1, 8));
+        VerticalLayout userInf = new VerticalLayout(new Paragraph(author.getName()),new Paragraph( new java.text.SimpleDateFormat("MM/dd/yyyy h:mm").format(date)));
+
+        userInf.setPadding(false);
+        reportInfo.add(new HorizontalLayout(avatarAuthor, userInf));
+
+
         HorizontalLayout buttons = new HorizontalLayout(save,revert);
-        HorizontalLayout level2 = new HorizontalLayout( priority,
-                type,
-                status,
-                assigned,
-                version,
-                buttons
-        );
-        level2.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
-        level2.setWidthFull();
+        FlexLayout flexLayout = new FlexLayout(priority, type, status,assigned, version, buttons);
+        for (int i=0;i<flexLayout.getComponentCount();i++)
+            flexLayout.getComponentAt(i).getElement().getStyle().set("margin","10px");
+        flexLayout.addClassName("responsive-layout");
+        flexLayout.getStyle().set("overflow","auto");
+        flexLayout.setAlignItems(Alignment.BASELINE);
+        flexLayout.setWidthFull();
+
+
         buttons.getStyle().set("margin-left","auto");
-        HorizontalLayout descLayout = new HorizontalLayout(description);
-        descLayout.setWidth("50%");
+        HorizontalLayout descLayout = new HorizontalLayout(description,reportInfo);
+        descLayout.setWidthFull();
+        buttons.getElement().getStyle().clear().set("margin-left", "auto");
         description.setWidthFull();
         description.setMaxLength(1500);
-        add(level2, descLayout);
+
+        add(flexLayout, descLayout);
 
         commentList = bugrapPresenter.requestCommentsByReport(report);
         commentList.forEach(comment -> commentLayout.add(getCommentLayout(comment)));

@@ -64,6 +64,7 @@ public class CommentPanel extends VerticalLayout {
         uploadLayout.setAlignItems(Alignment.STRETCH);
         HorizontalLayout commentLayout = new HorizontalLayout(commentArea,uploadLayout);
         commentLayout.setWidthFull();
+        uploadLayout.setWidth("40%");
         commentArea.setWidthFull();
         add(commentLayout);
         HorizontalLayout btnLayout = new HorizontalLayout(commentBtn,cancelBtn);
