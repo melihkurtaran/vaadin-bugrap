@@ -2,6 +2,7 @@ package org.tatu.bugrap.views;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -112,7 +113,14 @@ public class BugrapPresenter {
 			return;
 		}
 		reportRepository.save(report);
+	}
 
+	public void saveReports(Set<Report> reports){
+		if(reports == null){
+			System.err.println("Report set is null.");
+			return;
+		}
+		reportRepository.saveAll(reports);
 	}
 
 	public void saveComment(Comment comment){

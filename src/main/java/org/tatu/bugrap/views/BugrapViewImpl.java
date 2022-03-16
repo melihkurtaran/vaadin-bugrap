@@ -401,7 +401,9 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	{
 		//this will create a split panel to edit multiple report
 		formMultiple = new ReportFormMultiple(reporters, presenter.requestProjectVersionsByProject(selectedProject));
-		formSingle.setWidthFull();
+
+		formMultiple.addListener(ReportFormMultiple.SaveEvent.class, this::saveReports);
+		formMultiple.addListener(ReportFormMultiple.CloseEvent.class, closeEvent -> closeMultipleEditor());
 	}
 
 	public void updateList(){
@@ -415,6 +417,12 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		presenter.saveReport(event.getReport());
 		updateList();
 		closeSingleEditor();
+	}
+
+	public void saveReports(ReportFormMultiple.SaveEvent event){
+		presenter.saveReports(event.getReports());
+		updateList();
+		closeMultipleEditor();
 	}
 
 	public void refreshGridByStatus(){

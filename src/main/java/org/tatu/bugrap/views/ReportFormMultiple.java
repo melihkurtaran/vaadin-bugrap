@@ -1,6 +1,8 @@
 package org.tatu.bugrap.views;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -13,6 +15,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.shared.Registration;
 import org.vaadin.bugrap.domain.entities.ProjectVersion;
 import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
@@ -66,10 +69,37 @@ public class ReportFormMultiple extends VerticalLayout
 
     private Component createButtonLayout(){
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        save.addClickListener(buttonClickEvent -> validateAndSave());
+        revert.addClickListener(buttonClickEvent -> fireEvent(new ReportFormMultiple.CloseEvent(this)));
+
         revert.addThemeVariants(ButtonVariant.MATERIAL_CONTAINED);
         revert.addClickShortcut(Key.ESCAPE);
         HorizontalLayout layout = new HorizontalLayout(save,revert);
         return layout;
+    }
+
+    private void validateAndSave() {
+        boolean isValid = false;
+
+        if(priority.getValue() == null){
+            priority.setErrorMessage("Priority cannot be empty!");
+            priority.setInvalid(true);
+        }else if(type.getValue() == null){
+            type.setErrorMessage("Type cannot be empty!");
+            type.setInvalid(true);
+        }else if(status.getValue() == null){
+            status.setErrorMessage("Status cannot be empty!");
+            status.setInvalid(true);
+        }else {
+            for (Report r : reports) {
+                r.setPriority(priority.getValue());
+                r.setStatus(status.getValue());
+                r.setType(type.getValue());
+                r.setAssigned(assigned.getValue());
+                r.setVersion(version.getValue());
+            }
+            fireEvent(new ReportFormMultiple.SaveEvent(this,reports));
+        }
     }
 
     public void setTitle(String s)
@@ -104,5 +134,37 @@ public class ReportFormMultiple extends VerticalLayout
         if (assig_same && (selectedReport.getAssigned()!=null)) { assigned.setValue(selectedReport.getAssigned()); }
         if (vers_same && (selectedReport.getVersion()!=null)) { version.setValue(selectedReport.getVersion()); }
 
+    }
+
+
+    // Events
+    public static abstract class ReportFormMultipleEvent extends ComponentEvent<ReportFormMultiple> {
+        private Set<Report> reports;
+
+        protected ReportFormMultipleEvent(ReportFormMultiple source, Set<Report> reports) {
+            super(source, false);
+            this.reports = reports;
+        }
+
+        public Set<Report> getReports() {
+            return reports;
+        }
+    }
+
+    public static class SaveEvent extends ReportFormMultiple.ReportFormMultipleEvent {
+        SaveEvent(ReportFormMultiple source, Set<Report> reports) {
+            super(source, reports);
+        }
+    }
+
+    public static class CloseEvent extends ReportFormMultiple.ReportFormMultipleEvent {
+        CloseEvent(ReportFormMultiple source) {
+            super(source, null);
+        }
+    }
+
+    public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
+                                                                  ComponentEventListener<T> listener) {
+        return getEventBus().addListener(eventType, listener);
     }
 }

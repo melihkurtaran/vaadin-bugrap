@@ -193,13 +193,6 @@ public class ReportForm extends VerticalLayout {
         }
     }
 
-    public static class DeleteEvent extends ReportFormEvent {
-        DeleteEvent(ReportForm source, Report report) {
-            super(source, report);
-        }
-
-    }
-
     public static class CloseEvent extends ReportFormEvent {
         CloseEvent(ReportForm source) {
             super(source, null);
