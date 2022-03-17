@@ -1,6 +1,5 @@
 package org.tatu.bugrap.views;
 
-import antlr.Version;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -75,10 +74,15 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 	private static Report selectedReport;
 
+	private DistributionBar distributionBar;
+
 
 	public BugrapViewImpl(BugrapPresenter presenter, SecurityService securityService) {
 		this.presenter = presenter;
 		this.securityService = securityService;
+
+		distributionBar = new DistributionBar(presenter);
+		distributionBar.setVisible(false);
 
 		// If the user is not in repository then add it
 		if (presenter.getUser(userDetails.getUsername()) == null)
@@ -95,6 +99,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		grid.getDataCommunicator().setPagingEnabled(true);
 		initializeGrid();
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+
 
 		grid.addItemDoubleClickListener(dblClick -> {
 			selectedReport = dblClick.getItem();
@@ -132,6 +137,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		projectSelection.setPlaceholder("Select a project");
 		projectSelection.addValueChangeListener(event -> {
 			selectedProject = event.getValue();
+			distributionBar.setProject(selectedProject);
+			distributionBar.setVisible(true);
 			versions.clear();
 			allVersions.setVersion("All Versions");
 			allVersions.setProject(selectedProject);
@@ -255,6 +262,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			item.setCheckable(true);
 			item.setChecked(true);
 			item.addClickListener(listener);
+			selectedStatuses.add(status.toString());
 		}
 
 
@@ -323,7 +331,9 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		horizontalLayout.setWidthFull();
 		filter.getStyle().set("margin-left","auto");
 		add(horizontalLayout);
-		add(new HorizontalLayout(new Paragraph("Reports for"),versionSelection));
+		HorizontalLayout level2 = new HorizontalLayout(new Paragraph("Reports for"),versionSelection, distributionBar);
+		level2.setWidthFull();
+		add(level2);
 
 		HorizontalLayout assgnBtnLayout = new HorizontalLayout(btnAsgnMe,btnAsgnEveryone);
 		assgnBtnLayout.setSpacing(false);
@@ -415,6 +425,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		presenter.saveReport(event.getReport());
 		updateList();
 		closeSingleEditor();
+		distributionBar.updateBar();
 	}
 
 	public void saveReports(ReportFormMultiple.SaveEvent event){
@@ -423,6 +434,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		presenter.saveReports(event.getReports());
 		updateList();
 		closeMultipleEditor();
+		distributionBar.updateBar();
 	}
 
 	public void refreshGridByStatus(){
@@ -467,6 +479,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		order.add(new GridSortOrder<Report>(grid.getColumnByKey("priority"), SortDirection.DESCENDING));
 		grid.setColumnReorderingAllowed(true);
 		grid.sort(order);
+
 	}
 
 	public static Report getSelectedReport() {

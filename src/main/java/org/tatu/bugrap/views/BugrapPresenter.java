@@ -154,4 +154,18 @@ public class BugrapPresenter {
 			return null;
 		}
 	}
+
+	public long getNumberOfReports(Project selectedProject, String color)
+	{
+		if (selectedProject == null)
+			return 0;
+		else if(color.equals("blue")) // blue (number of closed)
+			return reportRepository.countByProjectAndStatusNot(selectedProject,Report.Status.OPEN);
+		else if(color.equals("green")) // green (number of open)
+			return reportRepository.countByProjectAndStatus(selectedProject,Report.Status.OPEN);
+		else if(color.equals("orange")) // orange (number of not assigned)
+			return reportRepository.countByProjectAndAssignedIsNull(selectedProject);
+		else
+			return 0;
+	}
 }

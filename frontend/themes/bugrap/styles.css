@@ -29,3 +29,24 @@ html {
     flex-wrap: wrap;
     align-content: flex-start;
 }
+
+.distribution-bar {
+    max-width: 85%;
+    height: 25px;
+    margin-top: 8px;
+    margin-left: 50px;
+    display: flex;
+}
+
+.distribution-bar-part {
+    min-width: 30px;
+    max-width: 95%;
+    height: 25px;
+    display: flex;
+}
+
+.distribution-bar-part-number {
+    width: 0;
+    color: white;
+    position: relative;
+}
