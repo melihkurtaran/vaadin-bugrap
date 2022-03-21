@@ -9,6 +9,7 @@ import com.vaadin.flow.component.avatar.AvatarVariant;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
@@ -21,6 +22,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.StreamResource;
+import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.vaadin.bugrap.domain.entities.Comment;
@@ -29,6 +32,10 @@ import org.vaadin.bugrap.domain.entities.Report;
 import org.vaadin.bugrap.domain.entities.Reporter;
 
 import javax.annotation.security.PermitAll;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -193,7 +200,7 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         return content;
     }
 
-    private Component getCommentLayout(Comment comment){
+    private Component getCommentLayout(Comment comment) {
         HorizontalLayout comLayout = new HorizontalLayout();
         comLayout.setWidthFull();
         comLayout.getStyle().set("border","1px solid gray").set("border-radius","3px");
@@ -213,11 +220,40 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
         userInf.setPadding(false);
 
         commentInfo.add(new HorizontalLayout(avatarAuthor, userInf));
-        commentInfo.add(new Paragraph(comment.getAttachmentName()));
-        comLayout.add(commentInfo);
 
+
+        // attachment link
+        if(comment.getAttachment() != null) {
+            File file = new File(comment.getAttachmentName());
+            try {
+                FileOutputStream f_out = new FileOutputStream(file);
+                f_out.write(comment.getAttachment());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            StreamResource streamResource = new StreamResource(file.getName(), () -> getStream(file));
+            Anchor link = new Anchor(streamResource, String.format("%s (%d KB)", file.getName(),
+                    (int) file.length() / 1024));
+            link.getElement().setAttribute("download", true);
+            commentInfo.add(link);
+        }
+
+        comLayout.add(commentInfo);
         return comLayout;
     }
+
+
+    private InputStream getStream(File file) {
+        FileInputStream stream = null;
+        try {
+            stream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return stream;
+    }
+
 
     private void validateAndSave() {
         report.setTimestamp(new Date());

@@ -12,14 +12,18 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.richtexteditor.RichTextEditor;
+import com.vaadin.flow.component.upload.MultiFileReceiver;
+import com.vaadin.flow.component.upload.Receiver;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
+import elemental.json.Json;
 import org.vaadin.bugrap.domain.entities.Comment;
 import org.vaadin.bugrap.domain.entities.Report;
 
+import java.io.*;
 import java.util.Date;
 
 public class CommentPanel extends VerticalLayout {
@@ -30,6 +34,10 @@ public class CommentPanel extends VerticalLayout {
     private Button commentBtn = new Button(" Comment",new Icon("lumo", "checkmark"));
     private Button cancelBtn = new Button("Cancel",new Icon("lumo", "cross"));
     private Report report;
+    private String commentFileName = null;
+    private byte[] commentFileContent = null;
+    private MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
+    private Upload upload = new Upload(buffer);
 
     public CommentPanel(Report report){
 
@@ -38,8 +46,6 @@ public class CommentPanel extends VerticalLayout {
         cancelBtn.addThemeVariants(ButtonVariant.MATERIAL_CONTAINED);
 
 
-        MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
-        Upload upload = new Upload(buffer);
         upload.setDropAllowed(true);
         upload.setAcceptedFileTypes("application/pdf", ".pdf", "application/png", ".png","application/jpg", ".jpg");
 
@@ -55,6 +61,12 @@ public class CommentPanel extends VerticalLayout {
                     Notification.Position.MIDDLE
             );
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        });
+        upload.addSucceededListener( succeededEvent -> {
+
+            commentFileName = succeededEvent.getFileName();
+            ByteArrayOutputStream outputStream = (ByteArrayOutputStream) succeededEvent.getUpload().getReceiver().receiveUpload(commentFileName,succeededEvent.getMIMEType());
+            commentFileContent = outputStream.toByteArray();
         });
 
         Label hint = new Label();
@@ -75,6 +87,18 @@ public class CommentPanel extends VerticalLayout {
 
     }
 
+    private Receiver createFileReceiver(File uploadFolder) {
+        return (MultiFileReceiver) (filename, mimeType) -> {
+            File file = new File(uploadFolder, filename);
+            try {
+                return new FileOutputStream(file);
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+                return null;
+            }
+        };
+    }
+
     private void saveComment()
     {
         Comment comment = new Comment();
@@ -82,7 +106,10 @@ public class CommentPanel extends VerticalLayout {
         comment.setTimestamp(new Date());
         comment.setReport(report);
         comment.setType(Comment.Type.COMMENT);
+        comment.setAttachmentName(commentFileName);
+        comment.setAttachment(commentFileContent);
         commentArea.clear();
+        upload.getElement().setPropertyJson("files", Json.createArray());
         fireEvent(new CommentPanel.SaveEvent(this,comment));
     }
 
