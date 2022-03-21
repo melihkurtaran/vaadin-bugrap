@@ -62,11 +62,18 @@ public class CommentPanel extends VerticalLayout {
             );
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         });
-        upload.addSucceededListener( succeededEvent -> {
 
+        final ByteArrayOutputStream file = new ByteArrayOutputStream(); // Stream to write to
+        upload.setReceiver(new Receiver() {
+            @Override
+            public OutputStream receiveUpload(String filename, String mimeType) {
+                return file; // Return the output stream to write to
+            }
+        });
+
+        upload.addSucceededListener( succeededEvent -> {
             commentFileName = succeededEvent.getFileName();
-            ByteArrayOutputStream outputStream = (ByteArrayOutputStream) succeededEvent.getUpload().getReceiver().receiveUpload(commentFileName,succeededEvent.getMIMEType());
-            commentFileContent = outputStream.toByteArray();
+            commentFileContent = file.toByteArray();
         });
 
         Label hint = new Label();

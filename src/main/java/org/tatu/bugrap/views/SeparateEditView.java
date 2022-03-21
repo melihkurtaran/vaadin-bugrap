@@ -232,8 +232,10 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
                 e.printStackTrace();
             }
             StreamResource streamResource = new StreamResource(file.getName(), () -> getStream(file));
-            Anchor link = new Anchor(streamResource, String.format("%s (%d KB)", file.getName(),
-                    (int) file.length() / 1024));
+            Anchor link = new Anchor(streamResource, (String.format("%s (%d KB)", file.getName(),
+                    (int) file.length() / 1024) ));
+            Icon fileIcon = new Icon(VaadinIcon.FILE_O);
+            link.add(fileIcon);
             link.getElement().setAttribute("download", true);
             commentInfo.add(link);
         }
