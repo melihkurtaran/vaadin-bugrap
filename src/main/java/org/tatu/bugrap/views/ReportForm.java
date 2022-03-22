@@ -32,10 +32,11 @@ public class ReportForm extends VerticalLayout {
     Binder<Report> binder = new BeanValidationBinder<>(Report.class);
 
     private H3 summary = new H3("");
-    private TextArea description = new TextArea("");
+    protected TextArea description = new TextArea("Description");
     private Button openBtn = new Button("Open");
+    protected HorizontalLayout sumLayout;
     private ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
-    private ComboBox<Report.Type> type = new ComboBox<>("Type");
+    protected ComboBox<Report.Type> type = new ComboBox<>("Type");
     private ComboBox<Report.Status> status = new ComboBox<>("Status");
     private ComboBox<ProjectVersion> version = new ComboBox<>("Version");
     private ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
@@ -45,6 +46,7 @@ public class ReportForm extends VerticalLayout {
     private Report report;
     private Reporter author;
     private Date date = new Date();
+    protected VerticalLayout reportInfo;
 
 
     public ReportForm(List<Reporter> reporters,List<ProjectVersion> versions) {
@@ -78,8 +80,8 @@ public class ReportForm extends VerticalLayout {
         flexLayout.getStyle().set("overflow","auto");
         flexLayout.setAlignItems(Alignment.BASELINE);
 
-        HorizontalLayout layout = new HorizontalLayout(summary,openBtn);
-        layout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
+        sumLayout = new HorizontalLayout(summary,openBtn);
+        sumLayout.setDefaultVerticalComponentAlignment(Alignment.BASELINE);
         description.setWidthFull();
         description.setMaxLength(1500);
 
@@ -89,7 +91,7 @@ public class ReportForm extends VerticalLayout {
             author.setName("unknown");
         }
 
-        VerticalLayout reportInfo = new VerticalLayout();
+        reportInfo = new VerticalLayout();
         reportInfo.setSizeFull();
         reportInfo.setAlignItems(Alignment.END);
 
@@ -108,7 +110,7 @@ public class ReportForm extends VerticalLayout {
 
         openBtn.getElement().getStyle().set("margin-left", "auto");
         buttons.getElement().getStyle().clear().set("margin-left", "auto");
-        layout.setWidthFull();
+        sumLayout.setWidthFull();
         flexLayout.setWidthFull();
         flexLayout.setHeightFull();
 
@@ -117,7 +119,7 @@ public class ReportForm extends VerticalLayout {
         descLayout.setWidthFull();
         HorizontalLayout layout2 = new HorizontalLayout(flexLayout);
         layout2.setWidthFull();
-        add( layout,layout2, descLayout);
+        add( sumLayout,layout2, descLayout);
 
     }
 

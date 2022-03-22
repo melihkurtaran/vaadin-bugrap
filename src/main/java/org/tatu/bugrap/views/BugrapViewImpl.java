@@ -72,6 +72,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private List<String> selectedStatuses = new ArrayList<>();
 	private SecurityService securityService;
 	private UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	private AddReport AddReportPanel;
 
 	private static Report selectedReport;
 
@@ -328,8 +329,20 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		EditorForSingleReport();
 		EditorMultipleReport();
+		addReportPanel();
+
 		formSingle.setVisible(false);
 		formMultiple.setVisible(false);
+		AddReportPanel.setVisible(false);
+
+		buttonReportBug.addClickListener(buttonClickEvent -> {
+			AddReportPanel.setType(Report.Type.BUG);
+			AddReportPanel.setVisible(true);
+		});
+		buttonReqFeature.addClickListener(buttonClickEvent -> {
+			AddReportPanel.setType(Report.Type.FEATURE);
+			AddReportPanel.setVisible(true);
+		});
 
 		countLabel = new Span();
 		HorizontalLayout horizontalLayout = new HorizontalLayout(buttonReportBug,buttonReqFeature,buttonMngProject,filter);
@@ -370,9 +383,10 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	}
 
 	private Component getContent() {
-		VerticalLayout content = new VerticalLayout(grid,formSingle,formMultiple,countLabel);
+		VerticalLayout content = new VerticalLayout(grid,formSingle,formMultiple,AddReportPanel,countLabel);
 		content.setFlexGrow(4,grid);
 		content.setFlexGrow(2,formSingle);
+		content.setFlexGrow(2,AddReportPanel);
 		content.setFlexGrow(1,formMultiple);
 		content.addClassName("content");
 		content.setSizeFull();
@@ -405,6 +419,17 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 		formSingle.addListener(ReportForm.SaveEvent.class, this::saveReport);
 		formSingle.addListener(ReportForm.CloseEvent.class, closeEvent -> closeSingleEditor());
+
+	}
+
+	public void addReportPanel()
+	{
+		//this will create a split panel to add a bug
+
+		AddReportPanel = new AddReport(presenter.requestProjects(), reporters, presenter.requestProjectVersionsByProject(selectedProject));
+		AddReportPanel.setWidthFull();
+		AddReportPanel.setMaxHeight("50%");
+
 
 	}
 

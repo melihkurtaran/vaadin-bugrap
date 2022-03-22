@@ -55,7 +55,7 @@ public class SeparateEditView extends VerticalLayout implements AfterNavigationO
 
     private Binder<Report> binder = new BeanValidationBinder<>(Report.class);
 
-    private TextArea description = new TextArea("");
+    private TextArea description = new TextArea("Description");
     private ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
     private ComboBox<Report.Type> type = new ComboBox<>("Type");
     private ComboBox<Report.Status> status = new ComboBox<>("Status");
