@@ -74,7 +74,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	private AddReport AddReportPanel;
 
-	private static Report selectedReport;
+	private static Report selectedReport = null;
 
 	private DistributionBar distributionBar;
 
@@ -110,6 +110,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 
 		grid.addSelectionListener(selectionEvent -> {
+			closeAddPanel();
 			if(selectionEvent.getAllSelectedItems().size()==1) {
 				closeMultipleEditor();
 				formSingle.setVisible(true);
@@ -123,6 +124,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			else if(selectionEvent.getAllSelectedItems().size()==0) {
 				closeSingleEditor();
 				closeMultipleEditor();
+				selectedReport = null;
 			}
 			else if(selectionEvent.getAllSelectedItems().size()>1) {
 				formMultiple.setTitle(String.valueOf(selectionEvent.getAllSelectedItems().size()) + " items selected");
@@ -336,12 +338,16 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		AddReportPanel.setVisible(false);
 
 		buttonReportBug.addClickListener(buttonClickEvent -> {
-			AddReportPanel.setType(Report.Type.BUG);
-			AddReportPanel.setVisible(true);
+			if(selectedReport == null) {
+				AddReportPanel.setType(Report.Type.BUG);
+				AddReportPanel.setVisible(true);
+			}
 		});
 		buttonReqFeature.addClickListener(buttonClickEvent -> {
-			AddReportPanel.setType(Report.Type.FEATURE);
-			AddReportPanel.setVisible(true);
+			if(selectedReport == null) {
+				AddReportPanel.setType(Report.Type.FEATURE);
+				AddReportPanel.setVisible(true);
+			}
 		});
 
 		countLabel = new Span();
@@ -371,6 +377,10 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		this.setFlexGrow(1, grid);
 
 
+	}
+
+	private void closeAddPanel(){
+		AddReportPanel.setVisible(false);
 	}
 
 	private void closeSingleEditor() {
@@ -424,11 +434,14 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 	public void addReportPanel()
 	{
-		//this will create a split panel to add a bug
+		//this will create a split panel to add a bug or feature
 
 		AddReportPanel = new AddReport(presenter.requestProjects(), reporters, presenter.requestProjectVersionsByProject(selectedProject));
 		AddReportPanel.setWidthFull();
 		AddReportPanel.setMaxHeight("50%");
+
+		AddReportPanel.addListener(ReportForm.SaveEvent.class, this::saveReport);
+		AddReportPanel.addListener(ReportForm.CloseEvent.class, closeEvent -> closeAddPanel());
 
 
 	}

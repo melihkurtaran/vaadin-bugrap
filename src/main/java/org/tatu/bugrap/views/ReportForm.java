@@ -29,20 +29,20 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ReportForm extends VerticalLayout {
 
-    Binder<Report> binder = new BeanValidationBinder<>(Report.class);
+    protected Binder<Report> binder = new BeanValidationBinder<>(Report.class);
 
     private H3 summary = new H3("");
     protected TextArea description = new TextArea("Description");
     private Button openBtn = new Button("Open");
     protected HorizontalLayout sumLayout;
-    private ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
+    protected ComboBox<Report.Priority> priority = new ComboBox<>("Priority");
     protected ComboBox<Report.Type> type = new ComboBox<>("Type");
-    private ComboBox<Report.Status> status = new ComboBox<>("Status");
-    private ComboBox<ProjectVersion> version = new ComboBox<>("Version");
-    private ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
+    protected ComboBox<Report.Status> status = new ComboBox<>("Status");
+    protected ComboBox<ProjectVersion> version = new ComboBox<>("Version");
+    protected ComboBox<Reporter> assigned = new ComboBox<>("Assigned to");
 
-    private Button save = new Button("Save Changes");
-    private Button revert = new Button("Revert", new Icon(VaadinIcon.ROTATE_LEFT));
+    protected Button save = new Button("Save Changes");
+    protected Button revert = new Button("Revert", new Icon(VaadinIcon.ROTATE_LEFT));
     private Report report;
     private Reporter author;
     private Date date = new Date();
