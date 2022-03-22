@@ -66,6 +66,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 	private boolean allStatusSelected = true;
 	private boolean assignMeSelected = false;
 	private boolean assignEveryoneSelected = true;
+	private String filterValue = "";
 	ProjectVersion allVersions = new ProjectVersion();
 	private Reporter assignee = null;
 	private List<String> selectedStatuses = new ArrayList<>();
@@ -129,6 +130,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				formMultiple.setVisible(true);
 			}
 		}) ;
+		grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
 		selectedProject = presenter.requestProjects().collect(Collectors.toList()).get(0); //default selected project is the first one
 
@@ -146,7 +148,9 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 			versions.addAll(presenter.requestProjectVersionsByProject(selectedProject));
 			versionSelection.setItems(versions);
 			versionSelection.setValue(allVersions); //to start as all versions selected
-			grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee,query));
+			grid.setItems(query -> presenter.requestReports(filterValue,selectedStatuses,selectedVersion,selectedProject,assignee,query));
+			count = presenter.requestReportCountByProject(selectedProject);
+			dataView.setItemCountEstimate(count);
 			dataView.refreshAll();
 		});
 
@@ -182,7 +186,8 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		filter.setValueChangeMode(ValueChangeMode.TIMEOUT);
 		filter.setValueChangeTimeout(2000);
 		filter.addValueChangeListener(event -> {
-			dataView = grid.setItems(query -> presenter.requestReports(event.getValue(), query));
+			filterValue = event.getValue();
+			dataView = grid.setItems(query -> presenter.requestReports(filterValue, selectedStatuses, selectedVersion, selectedProject, assignee, query));
 			dataView.setItemCountEstimate(count);
 			setCount(count);
 		});
@@ -199,7 +204,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 				sortGrid();
 			}
 			selectedVersion = version.getValue();
-			grid.setItems(query -> presenter.requestReports(selectedStatuses,version.getValue(),selectedProject,assignee, query));
+			grid.setItems(query -> presenter.requestReports(filterValue,selectedStatuses,version.getValue(),selectedProject,assignee, query));
 		});
 
 		// Only Me Button for Assignees
@@ -414,7 +419,7 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 	public void updateList(){
 		if(projectSelection.getValue() != null)
-			grid.setItems(query ->presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee,query));
+			grid.setItems(query ->presenter.requestReports(filterValue,selectedStatuses,selectedVersion,selectedProject,assignee,query));
 		else
 			grid.setItems(query -> presenter.requestReports("", query));
 		sortGrid();
@@ -437,23 +442,13 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		distributionBar.updateBar();
 	}
 
-	public void refreshGridByStatus(){
-		if(selectedProject == null)
-			Notification.show("Please choose a project first!");
-		else if(selectedVersion == null)
-			Notification.show("Please choose a version first!");
-		else
-			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee, query));
-
-	}
-
 	public void refreshGridByButton(){
 		if(selectedProject == null)
 			Notification.show("Please choose a project first!");
 		else if(selectedVersion == null)
 			Notification.show("Please choose a version first!");
 		else
-			dataView = grid.setItems(query -> presenter.requestReports(selectedStatuses,selectedVersion,selectedProject,assignee, query));
+			dataView = grid.setItems(query -> presenter.requestReports(filterValue,selectedStatuses,selectedVersion,selectedProject,assignee, query));
 
 	}
 

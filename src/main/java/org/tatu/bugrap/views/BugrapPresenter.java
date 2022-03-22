@@ -10,6 +10,7 @@ import com.vaadin.flow.component.notification.Notification;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers;
 import org.vaadin.bugrap.domain.entities.*;
@@ -48,12 +49,11 @@ public class BugrapPresenter {
 		report.setSummary(filter);
 		Example<Report> example = Example.of(report,
 				ExampleMatcher.matchingAny().withMatcher("summary", GenericPropertyMatchers.contains().ignoreCase()));
-
 		return reportRepository.findAll(example, PageRequest.of(query.getPage(), query.getPageSize())).stream();
 	}
 
 	//requesting reports with using its statuses, versions and the project
-	public Stream<Report> requestReports(List<String> statuses, ProjectVersion version,Project p,Reporter assignee, Query<Report, ?> query) {
+	public Stream<Report> requestReports(String filter,List<String> statuses, ProjectVersion version,Project p,Reporter assignee, Query<Report, ?> query) {
 
 		if (version == null) {
 			version = new ProjectVersion();
@@ -61,8 +61,14 @@ public class BugrapPresenter {
 		}
 		ProjectVersion finalVersion = version;
 
-		return reportRepository.findAll(PageRequest.of(query.getPage(),
-				query.getPageSize())).stream().filter(r -> {
+		Report report = new Report();
+		report.setSummary(filter);
+		Example<Report> example = Example.of(report,
+				ExampleMatcher.matchingAny().withMatcher("summary", GenericPropertyMatchers.contains().ignoreCase()));
+		int a = query.getPageSize();
+		int b = query.getPage();
+		return reportRepository.findAll(example,PageRequest.of(query.getPage(),
+				query.getPageSize()*5, Sort.by("priority").descending())).stream().filter(r -> {
 			if( r.getProject() != null && p != null
 					&& ( finalVersion.getVersion().equals("All Versions") || (r.getVersion() != null && r.getVersion().getVersion().equals(finalVersion.getVersion())))
 					&& r.getProject().getName().equals(p.getName())
@@ -78,6 +84,12 @@ public class BugrapPresenter {
 		int count = (int) reportRepository.count();
 		view.setCount(count);
 		return count; 
+	}
+
+	public int requestReportCountByProject(Project p) {
+		int count = (int) (reportRepository.countByProjectAndStatusIsNull(p) + reportRepository.countByProjectAndStatusNotAndStatusIsNotNull(p, Report.Status.OPEN) + reportRepository.countByProjectAndStatus(p, Report.Status.OPEN));
+		view.setCount(count);
+		return count;
 	}
 
 	public Stream<Project> requestProjects() {
