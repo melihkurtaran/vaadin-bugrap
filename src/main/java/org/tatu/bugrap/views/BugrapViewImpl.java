@@ -440,10 +440,20 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 		AddReportPanel.setWidthFull();
 		AddReportPanel.setMaxHeight("50%");
 
-		AddReportPanel.addListener(ReportForm.SaveEvent.class, this::saveReport);
-		AddReportPanel.addListener(ReportForm.CloseEvent.class, closeEvent -> closeAddPanel());
+		AddReportPanel.addListener(AddReport.SaveEvent.class, this::addReport);
+		AddReportPanel.addListener(AddReport.CloseEvent.class, closeEvent -> closeAddPanel());
 
 
+	}
+
+	public void addReport(AddReport.SaveEvent event){
+		event.getReport().setAuthor(presenter.getUser(userDetails.getUsername()));
+		presenter.saveReport(event.getReport());
+		updateList();
+		closeAddPanel();
+		distributionBar.updateBar();
+		count = presenter.requestReportCount();
+		dataView.setItemCountEstimate(count);
 	}
 
 	public void EditorMultipleReport()
