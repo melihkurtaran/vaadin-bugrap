@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -23,6 +24,7 @@ public class AddReport extends ReportForm{
     private TextField summary = new TextField("Summary");
     private ComboBox<Project> project = new ComboBox<>("Project");
     protected Button addReportBtn = new Button("Add Report");
+    private H3 title = new H3("");
     Report report = new Report();
 
     public AddReport(Stream<Project> projects, List<Reporter> reporters, List<ProjectVersion> versions){
@@ -42,7 +44,7 @@ public class AddReport extends ReportForm{
         save.setVisible(false);
         addReportBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         addReportBtn.addClickListener(event -> addReport());
-        HorizontalLayout layout = new HorizontalLayout(addReportBtn);
+        HorizontalLayout layout = new HorizontalLayout(title,addReportBtn);
         layout.setWidthFull();
         addReportBtn.getStyle().set("margin-left","auto");
         this.addComponentAsFirst(layout);
@@ -90,6 +92,10 @@ public class AddReport extends ReportForm{
     public void setType(Report.Type t){
         type.setValue(t);
         type.setReadOnly(true);
+        if(t.equals(Report.Type.BUG))
+            title.setText("Report a bug");
+        else
+            title.setText("Request a feature");
     }
 
     // Events
