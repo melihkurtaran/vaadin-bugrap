@@ -123,9 +123,7 @@ public class ReportForm extends VerticalLayout {
 
     }
 
-    public ReportForm() {
-
-    }
+    public ReportForm() {}
 
     public void setSummary(String s)
     {

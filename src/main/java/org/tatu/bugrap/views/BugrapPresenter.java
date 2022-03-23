@@ -1,12 +1,9 @@
 package org.tatu.bugrap.views;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.notification.Notification;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
@@ -158,7 +155,7 @@ public class BugrapPresenter {
 
 		reporterRepository.save(user);
 	}
-
+	// find the user with username or email
 	public Reporter getUser(String username){
 		try{
 		return reporterRepository.getByNameOrEmail(username,username);
@@ -167,6 +164,7 @@ public class BugrapPresenter {
 		}
 	}
 
+	// for the distribution bar
 	public long getNumberOfReports(Project selectedProject, String color)
 	{
 		if (selectedProject == null)

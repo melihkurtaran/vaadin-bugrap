@@ -23,7 +23,6 @@ import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.StreamResource;
-import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.vaadin.bugrap.domain.entities.Comment;
@@ -33,9 +32,6 @@ import org.vaadin.bugrap.domain.entities.Reporter;
 
 import javax.annotation.security.PermitAll;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
