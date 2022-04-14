@@ -1,7 +1,9 @@
-# Bugrap
+# Vaadin Bugrap App
 
-This project can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
+The Vaadin Bugrap web app is a tool to manage bug reports and feature requests for various projects. Users can view the reports, edit them and also add comments to them.
+
+The demo video can be seen here:
+https://youtu.be/TpOWyiX4bY0
 
 ## Running the application
 
