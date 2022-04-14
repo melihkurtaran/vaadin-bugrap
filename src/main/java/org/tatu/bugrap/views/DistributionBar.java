@@ -36,10 +36,6 @@ public class DistributionBar extends LitTemplate {
         getElement().setProperty("numAssigned", numOfAssignedReports);
         getElement().setProperty("numUnassigned", numOfUnassignedReports);
 
-        getElement().setProperty("sizeClosed", numOfClosedReports *30);
-        getElement().setProperty("sizeAssigned", numOfAssignedReports *30);
-        getElement().setProperty("sizeUnassigned", numOfUnassignedReports *30);
-
     }
 }
 
