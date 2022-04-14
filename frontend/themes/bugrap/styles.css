@@ -38,13 +38,6 @@ html {
     display: flex;
 }
 
-.distribution-bar-part {
-    min-width: 30px;
-    max-width: 95%;
-    height: 25px;
-    display: flex;
-}
-
 .distribution-bar-part-number {
     width: 0;
     color: white;
