@@ -1,11 +1,14 @@
 package org.tatu.bugrap.views;
 
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.GridSortOrder;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
@@ -30,6 +33,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.vaadin.bugrap.domain.entities.Reporter;
 
 import javax.annotation.security.PermitAll;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -264,6 +268,10 @@ public class BugrapViewImpl extends VerticalLayout implements BugrapView, AfterN
 
 			refreshGridByButton();
 		};
+
+
+
+
 
 		for (Report.Status status : Report.Status.values()) {
 			MenuItem item = subItems.addItem(status.toString());
